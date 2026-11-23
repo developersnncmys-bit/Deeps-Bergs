@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Philosopher, Anton, Raleway, Great_Vibes, Italianno } from "next/font/google";
+import { Philosopher, Anton, Raleway, Great_Vibes, Italiana } from "next/font/google";
 import { Preloader } from "@/components/layout/Preloader";
 import "./globals.css";
 
@@ -35,9 +35,9 @@ const greatVibes = Great_Vibes({
   weight: ["400"],
 });
 
-// Banner headings — Italianno (calligraphy script).
-const italianno = Italianno({
-  variable: "--font-italianno",
+// Banner headings — Italiana (Italian display serif, single weight).
+const italiana = Italiana({
+  variable: "--font-italiana",
   subsets: ["latin"],
   display: "swap",
   weight: ["400"],
@@ -61,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${philosopher.variable} ${anton.variable} ${raleway.variable} ${greatVibes.variable} ${italianno.variable} h-full antialiased`}
+      className={`${philosopher.variable} ${anton.variable} ${raleway.variable} ${greatVibes.variable} ${italiana.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-ink">
         <Preloader />

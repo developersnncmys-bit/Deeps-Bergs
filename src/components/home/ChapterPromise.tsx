@@ -48,7 +48,7 @@ export function ChapterPromise() {
         </span>
 
         <h1
-          style={{ fontFamily: "var(--font-italianno)", WebkitTextStroke: "0" }}
+          style={{ fontFamily: "var(--font-italiana)", WebkitTextStroke: "0" }}
           className="text-[clamp(2.25rem,5.5vw,4.25rem)] font-normal leading-[1.05] tracking-normal text-white/95"
         >
           Three ways
