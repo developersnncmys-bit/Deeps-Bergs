@@ -1,0 +1,58 @@
+import type { Look } from "@/lib/types";
+
+export const looks: Look[] = [
+  {
+    id: "l-001",
+    slug: "sangeet-ready",
+    name: "Sangeet Ready",
+    coverImage: "/images/rental/sangeet.png",
+    sectionId: "wedding",
+    productIds: ["p-001", "p-006"],
+    tags: ["Bridal", "Evening"],
+  },
+  {
+    id: "l-002",
+    slug: "reception-gold",
+    name: "Reception Gold",
+    coverImage: "/images/rental/reception.png",
+    sectionId: "wedding",
+    productIds: ["p-006"],
+    tags: ["Bridal", "Reception"],
+  },
+  {
+    id: "l-003",
+    slug: "grooms-night",
+    name: "Groom's Night",
+    coverImage: "/images/category/groomswear.png",
+    sectionId: "wedding",
+    productIds: ["p-003", "p-013"],
+    tags: ["Groom", "Night"],
+  },
+  {
+    id: "l-004",
+    slug: "mehendi-morning",
+    name: "Mehendi Morning",
+    coverImage: "/images/rental/Mehendi.png",
+    sectionId: "contemporary",
+    productIds: ["p-007"],
+    tags: ["Festive", "Morning"],
+  },
+  {
+    id: "l-005",
+    slug: "cocktail-hour",
+    name: "Cocktail Hour",
+    coverImage: "/images/rental/cocktail.png",
+    sectionId: "contemporary",
+    productIds: ["p-008"],
+    tags: ["Evening", "Cocktail"],
+  },
+  {
+    id: "l-006",
+    slug: "daywear-edit",
+    name: "Daywear Edit",
+    coverImage: "/images/category/co-ord.png",
+    sectionId: "contemporary",
+    productIds: ["p-009", "p-011", "p-012"],
+    tags: ["Daywear"],
+  },
+];

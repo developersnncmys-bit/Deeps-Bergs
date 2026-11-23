@@ -1,26 +1,142 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand palette — fashion commerce default (easy to restyle later) */
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a1a;
+  --color-ink-muted: #6b6762;
+  --color-ink-subtle: #a09b94;
+  --color-line: #e8e3dc;
+  --color-line-strong: #c9c2b8;
+
+  --color-brand: #7c2d2d;
+  --color-brand-dark: #5a1f1f;
+  --color-brand-tint: #f5ecec;
+
+  --color-accent: #c9a96a;
+  --color-success: #2f6b3a;
+  --color-warning: #b87333;
+  --color-danger: #a33434;
+  --color-info: #2a5d8f;
+
+  /* Status chips for rentals/orders */
+  --color-status-available: #2f6b3a;
+  --color-status-booked: #a33434;
+  --color-status-pending: #b87333;
+
+  /* Typography */
+  /* Single-family stack — Philosopher (humanist/glyphic sans). Only 400 + 700 weights available. */
+  --font-sans: var(--font-philosopher), ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Radii */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(23, 20, 15, 0.04);
+  --shadow-md: 0 4px 12px rgba(23, 20, 15, 0.06);
+  --shadow-lg: 0 10px 30px rgba(23, 20, 15, 0.10);
+
+  /* Container */
+  --container-page: 1280px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-raleway), var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Utility: hide scrollbar but keep scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* Focus ring (keyboard only) */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 250ms ease-out; }
+
+/* AI feature strip micro-interactions */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50%      { transform: scale(1.35) rotate(15deg); opacity: 0.75; }
+}
+@keyframes wand-wiggle {
+  0%, 100% { transform: rotate(-6deg); }
+  50%      { transform: rotate(6deg); }
+}
+@keyframes scan-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.animate-spin-slow   { animation: spin-slow 6s linear infinite; }
+.animate-twinkle     { animation: twinkle 1.8s ease-in-out infinite; transform-origin: center; }
+.animate-wand-wiggle { animation: wand-wiggle 1.6s ease-in-out infinite; transform-origin: 50% 80%; }
+.animate-scan-pulse  { animation: scan-pulse 2.2s ease-in-out infinite; transform-origin: center; }
+
+/* ─── Preloader (cinematic three-phase sequence) ─── */
+
+/* Logo reveal: wipe from left → right while scaling 0.94 → 1 */
+@keyframes logo-reveal {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 0.6; transform: scale(0.94); }
+  60%  { clip-path: inset(0 0     0 0); opacity: 1;   transform: scale(1);    }
+  100% { clip-path: inset(0 0     0 0); opacity: 1;   transform: scale(1);    }
+}
+.animate-logo-reveal { animation: logo-reveal 750ms cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+
+/* Underline — grows from center outward */
+@keyframes line-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.animate-line-grow { animation: line-grow 630ms cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-origin: center; }
+
+/* Exit curtains — top panel slides up, bottom panel slides down */
+@keyframes curtain-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+@keyframes curtain-down {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+.animate-curtain-up   { animation: curtain-up   900ms cubic-bezier(0.76, 0, 0.24, 1) forwards; }
+.animate-curtain-down { animation: curtain-down 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards; }
+
+@keyframes blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.animate-blink { animation: blink 1s steps(1) infinite; }

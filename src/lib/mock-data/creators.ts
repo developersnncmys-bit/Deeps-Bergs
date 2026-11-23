@@ -1,0 +1,58 @@
+import type { Creator } from "@/lib/types";
+
+export const creators: Creator[] = [
+  {
+    id: "c-001",
+    handle: "ananya.k",
+    name: "Ananya Kapoor",
+    bio: "Bridal stylist · 12 looks curated",
+    avatar: "/images/rental/wedding-guest.png",
+    cover: "/images/category/bridal.png",
+    productIds: ["p-001", "p-006"],
+  },
+  {
+    id: "c-002",
+    handle: "rahul.m",
+    name: "Rahul Mehta",
+    bio: "Menswear editor · 8 looks curated",
+    avatar: "/images/category/groomswear.png",
+    cover: "/images/him/him1.png",
+    productIds: ["p-003"],
+  },
+  {
+    id: "c-003",
+    handle: "studio.ira",
+    name: "Studio Ira",
+    bio: "Daywear capsule · 14 looks curated",
+    avatar: "/images/category/co-ord.png",
+    cover: "/images/rental/cocktail.png",
+    productIds: ["p-002", "p-004"],
+  },
+  {
+    id: "c-004",
+    handle: "maya.r",
+    name: "Maya Rao",
+    bio: "Active & lounge · 6 looks curated",
+    avatar: "/images/category/kurtas-sets.png",
+    cover: "/images/rental/sangeet.png",
+    productIds: ["p-005"],
+  },
+  {
+    id: "c-005",
+    handle: "priya.s",
+    name: "Priya Sharma",
+    bio: "Reception specialist · 9 looks curated",
+    avatar: "/images/category/sarees.png",
+    cover: "/images/rental/reception.png",
+    productIds: ["p-002"],
+  },
+  {
+    id: "c-006",
+    handle: "aarav.k",
+    name: "Aarav Khanna",
+    bio: "Sherwani editor · 7 looks curated",
+    avatar: "/images/category/sherwanis.png",
+    cover: "/images/rental/Mehendi.png",
+    productIds: ["p-003"],
+  },
+];
