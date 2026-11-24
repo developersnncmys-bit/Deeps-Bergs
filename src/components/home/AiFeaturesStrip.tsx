@@ -53,7 +53,7 @@ export function AiFeaturesStrip() {
     <section className="bg-gradient-to-br from-[#fbf3f3] via-[#f5ecec] to-[#fbf3f3] py-6 sm:py-8 lg:py-10">
       <Container>
         <TypingHeading text={HEADLINE} />
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-3 sm:mt-14 sm:gap-4 lg:mt-16 lg:grid-cols-4">
           {features.map(({ title, icon }) => (
             <div
               key={title}
@@ -108,7 +108,8 @@ function TypingHeading({ text }: { text: string }) {
   return (
     <h2
       aria-label={text}
-      className="mb-5 min-h-[1.2em] text-center font-sans text-xl uppercase tracking-[0.15em] text-brand-dark sm:mb-6 sm:text-2xl"
+      style={{ fontFamily: "var(--font-raleway)" }}
+      className="mb-5 min-h-[1.2em] text-center text-xl uppercase tracking-[0.15em] text-brand-dark sm:mb-6 sm:text-2xl"
     >
       <span aria-hidden>{typed}</span>
       <span

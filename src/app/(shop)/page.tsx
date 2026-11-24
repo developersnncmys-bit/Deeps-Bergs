@@ -6,6 +6,8 @@ import { ChapterModeSplit } from "@/components/home/ChapterModeSplit";
 import { NewArrivalsCarousel } from "@/components/home/NewArrivalsCarousel";
 import { ChapterTryOn } from "@/components/home/ChapterTryOn";
 import { AiToolkitStrip } from "@/components/home/AiToolkitStrip";
+import { ChapterAiDemo } from "@/components/home/ChapterAiDemo";
+import { ChapterOutfitShowcase } from "@/components/home/ChapterOutfitShowcase";
 import { ChapterVideos } from "@/components/home/ChapterVideos";
 import { ChapterCreatorProgram } from "@/components/home/ChapterCreatorProgram";
 import { ChapterStory } from "@/components/home/ChapterStory";
@@ -63,8 +65,16 @@ export default function HomePage() {
       <InView>
         <AiToolkitStrip />
       </InView>
+      {/* AI demo videos — temporarily hidden
+      <InView>
+        <ChapterAiDemo />
+      </InView>
+      */}
       <InView>
         <ChapterVideos />
+      </InView>
+      <InView>
+        <ChapterOutfitShowcase />
       </InView>
       <InView>
         <ChapterCreatorProgram />

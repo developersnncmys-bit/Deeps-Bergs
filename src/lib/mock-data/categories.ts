@@ -12,8 +12,8 @@ export const categories: Category[] = [
   { id: "sarees", sectionId: "contemporary", name: "Sarees", slug: "sarees", image: "/images/category/sarees.png" },
   { id: "kurtas", sectionId: "contemporary", name: "Kurtas & Sets", slug: "kurtas", image: "/images/category/kurtas-sets.png" },
   { id: "co-ords", sectionId: "contemporary", name: "Co-ords", slug: "co-ords", image: "/images/category/co-ord.png" },
-  { id: "dresses", sectionId: "contemporary", name: "Dresses", slug: "dresses" },
-  { id: "shirts", sectionId: "contemporary", name: "Shirts", slug: "shirts" },
+  { id: "dresses", sectionId: "contemporary", name: "Dresses", slug: "dresses", image: "/images/category/dresses.png" },
+  { id: "shirts", sectionId: "contemporary", name: "Shirts", slug: "shirts", image: "/images/category/shirts.png" },
 
   // Activewear
   { id: "tops", sectionId: "activewear", name: "Tops", slug: "tops" },

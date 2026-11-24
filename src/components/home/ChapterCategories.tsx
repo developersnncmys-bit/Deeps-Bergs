@@ -29,7 +29,7 @@ export function ChapterCategories() {
       {/* Header row — title left, view all right */}
       <Container className="lg:max-w-none">
         <div className="mb-6 flex items-end justify-between">
-          <h2 className="font-sans text-xl uppercase tracking-[0.15em] text-ink sm:text-2xl">
+          <h2 className="font-sans text-xl uppercase tracking-[0.15em] text-ink sm:text-2xl lg:text-3xl">
             Shop by Category
           </h2>
           <Link

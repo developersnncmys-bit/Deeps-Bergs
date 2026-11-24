@@ -27,7 +27,7 @@ export function LooksCarousel() {
     <div className="flex flex-col items-center gap-6">
       {/* Centered header */}
       <div className="px-4 text-center sm:px-6 lg:px-10">
-        <h2 className="font-sans text-2xl uppercase tracking-[0.15em] text-ink sm:text-3xl">
+        <h2 className="font-sans text-2xl uppercase tracking-[0.15em] text-ink sm:text-3xl lg:text-4xl">
           Shop the Look
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm text-ink-muted">

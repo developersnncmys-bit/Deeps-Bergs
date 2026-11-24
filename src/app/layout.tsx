@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Philosopher, Anton, Raleway, Great_Vibes, Italiana } from "next/font/google";
+import { Philosopher, Italiana, Great_Vibes, Raleway } from "next/font/google";
 import { Preloader } from "@/components/layout/Preloader";
 import "./globals.css";
 
@@ -11,23 +11,15 @@ const philosopher = Philosopher({
   weight: ["400", "700"],
 });
 
-// Display — Anton, used only by the navbar brand name (single weight, very heavy by design).
-const anton = Anton({
-  variable: "--font-anton",
+// Banner headings — Italiana (Italian display serif, single weight).
+const italiana = Italiana({
+  variable: "--font-italiana",
   subsets: ["latin"],
   display: "swap",
   weight: ["400"],
 });
 
-// Nav page links — Raleway (full weight range).
-const raleway = Raleway({
-  variable: "--font-raleway",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
-
-// Section accents — Great Vibes (flowing script).
+// Reserved for the rent quote only — flowing script accent.
 const greatVibes = Great_Vibes({
   variable: "--font-great-vibes",
   subsets: ["latin"],
@@ -35,12 +27,12 @@ const greatVibes = Great_Vibes({
   weight: ["400"],
 });
 
-// Banner headings — Italiana (Italian display serif, single weight).
-const italiana = Italiana({
-  variable: "--font-italiana",
+// Reserved for the AI strip headings ("Shop smarter", "Powered by AI…").
+const raleway = Raleway({
+  variable: "--font-raleway",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -61,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${philosopher.variable} ${anton.variable} ${raleway.variable} ${greatVibes.variable} ${italiana.variable} h-full antialiased`}
+      className={`${philosopher.variable} ${italiana.variable} ${greatVibes.variable} ${raleway.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-ink">
         <Preloader />

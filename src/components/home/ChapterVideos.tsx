@@ -213,7 +213,7 @@ export function ChapterVideos() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-ink-muted">
             Shoppable Video
           </p>
-          <h2 className="font-sans text-2xl uppercase tracking-[0.15em] text-ink sm:text-3xl">
+          <h2 className="font-sans text-2xl uppercase tracking-[0.15em] text-ink sm:text-3xl lg:text-4xl">
             Shop the Reels
           </h2>
           <p className="mx-auto max-w-md text-sm text-ink-muted">

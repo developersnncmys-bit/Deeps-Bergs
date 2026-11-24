@@ -19,8 +19,8 @@ import Link from "next/link";
  * conveyor swap: panel 1 slides out to the left and panel 2 takes its place.
  */
 
-const IMAGE_1 = "/images/category/bridal.png";
-const IMAGE_2 = "/images/rental/sangeet.png";
+const IMAGE_1 = "/images/chapterv1.png";
+const IMAGE_2 = "/images/chapterv2.png";
 
 export function ChapterStory() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -124,30 +124,31 @@ export function ChapterStory() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/40" />
         </div>
 
-        {/* ── Scene 1: headline centred over the full-bleed image ── */}
+        {/* ── Scene 1: headline + attribution anchored near the bottom, above the scene dots ── */}
         <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-white"
+          className="pointer-events-none absolute inset-x-0 bottom-16 z-20 flex flex-col items-center gap-4 px-6 text-center text-white"
           style={{
             opacity: scene1Op,
             transform: `translateX(${-slide1 * 25}vw)`,
           }}
         >
-          <div
-            className="flex max-w-3xl flex-col gap-6"
+          <h2
+            style={{
+              fontFamily: "var(--font-raleway)",
+              textShadow: "0 2px 24px rgba(0,0,0,0.45)",
+            }}
+            className="max-w-3xl text-[clamp(1.25rem,3.5vw,2.75rem)] font-medium leading-[1.1]"
+          >
+            The finest craft is quiet.
+            <br />
+            For the few who notice.
+          </h2>
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.35em] text-white/85"
             style={{ textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
           >
-            <h2
-              style={{ fontFamily: "var(--font-raleway)" }}
-              className="text-[clamp(1.75rem,5vw,4rem)] font-medium leading-[1.1]"
-            >
-              The finest craft is quiet.
-              <br />
-              For the few who notice.
-            </h2>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-white/80">
-              — The Deeps &amp; Bergs Woman
-            </p>
-          </div>
+            — The Deeps &amp; Bergs
+          </p>
         </div>
 
         {/* ── Panel 1 (Scene 2) — slides in from right, then slides out left ── */}
@@ -164,7 +165,7 @@ export function ChapterStory() {
             </p>
             <h2
               style={{ fontFamily: "var(--font-raleway)" }}
-              className="text-[clamp(1.75rem,3.5vw,3.25rem)] font-medium leading-[1.1] text-ink"
+              className="text-[clamp(1.5rem,3.25vw,2.75rem)] font-medium leading-[1.1] text-ink"
             >
               Where tradition
               <br />
@@ -203,7 +204,7 @@ export function ChapterStory() {
             </p>
             <h2
               style={{ fontFamily: "var(--font-raleway)" }}
-              className="text-[clamp(1.5rem,3vw,2.75rem)] font-medium leading-[1.1] text-ink"
+              className="text-[clamp(1.35rem,3vw,2.5rem)] font-medium leading-[1.1] text-ink"
             >
               A fragment of the city,
               <br />

@@ -268,6 +268,7 @@ function TierRow({
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link
               href={`/membership/subscribe?tier=${tier.id}&billing=${billing}`}
+              style={{ fontFamily: "var(--font-raleway)" }}
               className="inline-flex items-center gap-2 bg-white px-6 py-3 text-[12px] font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-brand hover:text-white"
             >
               Subscribe
@@ -275,6 +276,7 @@ function TierRow({
             </Link>
             <Link
               href={`/membership#${tier.id}`}
+              style={{ fontFamily: "var(--font-raleway)" }}
               className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/65 underline-offset-[6px] hover:text-white hover:underline"
             >
               See all benefits

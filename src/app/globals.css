@@ -68,6 +68,12 @@ h1, h2, h3, h4 {
   letter-spacing: -0.01em;
 }
 
+/* Tailwind's `font-sans` utility outranks the h1–h4 element rule above,
+   so when a heading opts into it, keep Raleway for the family. */
+h1.font-sans, h2.font-sans, h3.font-sans, h4.font-sans {
+  font-family: var(--font-raleway), var(--font-sans);
+}
+
 /* Utility: hide scrollbar but keep scroll */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }

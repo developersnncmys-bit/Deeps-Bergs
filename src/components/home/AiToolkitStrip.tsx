@@ -55,7 +55,10 @@ export function AiToolkitStrip() {
     <div className="bg-gradient-to-br from-[#fbe3ea] via-[#efd9e7] to-[#dfd3ef] py-16 sm:py-20 lg:py-24">
       <Container>
         {/* Typewriter headline */}
-        <h3 className="mb-12 text-center font-serif text-2xl text-brand-dark sm:mb-14 sm:text-3xl lg:text-[32px]">
+        <h3
+          style={{ fontFamily: "var(--font-raleway)" }}
+          className="mb-12 text-center text-2xl text-brand-dark sm:mb-14 sm:text-3xl lg:text-[32px]"
+        >
           <Typewriter text="Powered by AI, built around you." />
         </h3>
 

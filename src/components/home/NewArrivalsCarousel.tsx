@@ -36,7 +36,7 @@ export function NewArrivalsCarousel() {
     >
       {/* Centered heading */}
       <div className="mb-8 text-center">
-        <h2 className="font-sans text-xl uppercase tracking-[0.15em] text-ink sm:text-2xl">
+        <h2 className="font-sans text-xl uppercase tracking-[0.15em] text-ink sm:text-2xl lg:text-3xl">
           New Arrivals
         </h2>
       </div>

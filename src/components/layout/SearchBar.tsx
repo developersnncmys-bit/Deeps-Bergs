@@ -1,17 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-type Mode = "text" | "voice" | "visual";
+import {
+  SearchOverlay,
+  type OverlayMode,
+} from "@/components/search/SearchOverlay";
 
 /**
  * Nykaa-style pill search bar.
  * - Pill (rounded-full) container, prefix search icon + inline input
  * - Right-side switchable pill holds the mic (voice/A04) + camera (visual/A05)
  *   with a sliding "selected" background — one mode active at a time.
- * - Enter in the input submits a text search (A03).
+ * - Any click (input focus / mic / camera) opens the full-width SearchOverlay
+ *   so the three AI search surfaces take over the navbar region (Kalki-style).
  */
 export function SearchBar({
   className,
@@ -20,123 +22,86 @@ export function SearchBar({
   className?: string;
   tone?: "light" | "dark";
 }) {
-  const router = useRouter();
-  const [q, setQ] = useState("");
-  const [mode, setMode] = useState<Mode>("text");
-  const [listening, setListening] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [overlayMode, setOverlayMode] = useState<OverlayMode>("text");
   const isDark = tone === "dark";
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const term = q.trim();
-    router.push(term ? `/search?q=${encodeURIComponent(term)}` : "/search");
-  };
-
-  const activateVoice = () => {
-    setMode("voice");
-    setListening(true);
-    setTimeout(() => setListening(false), 1200);
-  };
-
-  const activateVisual = () => {
-    setMode("visual");
-    fileRef.current?.click();
-  };
-
-  const onVisualFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    router.push(`/search?mode=visual`);
+  const openOverlay = (mode: OverlayMode) => (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    setOverlayMode(mode);
+    setOverlayOpen(true);
   };
 
   return (
-    <form
-      onSubmit={submit}
-      role="search"
-      className={cn(
-        "flex h-10 items-center gap-2 border-b pl-1 pr-0.5 transition-colors",
-        isDark ? "border-white/60" : "border-ink",
-        className
-      )}
-    >
-      {/* Leading search icon */}
-      <IconSearch
-        className={cn(
-          "shrink-0 transition-colors",
-          isDark ? "text-white/80" : "text-ink-subtle"
-        )}
-      />
-
-      {/* Input */}
-      <input
-        type="search"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        onFocus={() => setMode("text")}
-        placeholder={
-          listening
-            ? "Listening…"
-            : mode === "visual"
-              ? "Pick a photo to search with"
-              : "Search a look"
-        }
-        aria-label="Search the store"
-        style={{ fontFamily: "var(--font-raleway)" }}
-        className={cn(
-          "min-w-0 flex-1 bg-transparent text-sm font-medium outline-none transition-colors",
-          isDark
-            ? "text-white placeholder:font-medium placeholder:text-white/85"
-            : "text-ink placeholder:font-medium placeholder:text-ink-muted"
-        )}
-      />
-
-      {/* Switchable mode pill — mic / camera (light grey container, black active) */}
+    <>
       <div
+        role="search"
+        onClick={openOverlay("text")}
         className={cn(
-          "relative flex items-center rounded-full p-0.5 transition-colors",
-          isDark ? "bg-white/15" : "bg-[#f0f0f0]"
+          "flex h-10 cursor-text items-center gap-2 border-b pl-1 pr-0.5 transition-colors",
+          isDark ? "border-white/60" : "border-ink",
+          className,
         )}
       >
-        <ModeButton
-          active={mode === "voice"}
-          onClick={activateVoice}
-          ariaLabel={listening ? "Listening…" : "AI voice search"}
-          isDark={isDark}
-        >
-          <IconMic />
-        </ModeButton>
-        <ModeButton
-          active={mode === "visual"}
-          onClick={activateVisual}
-          ariaLabel="AI visual search"
-          isDark={isDark}
-        >
-          <IconCamera />
-        </ModeButton>
-
-        {/* hidden file input for visual search */}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          onChange={onVisualFile}
-          className="sr-only"
+        {/* Leading search icon */}
+        <IconSearch
+          className={cn(
+            "shrink-0 transition-colors",
+            isDark ? "text-white/80" : "text-ink-subtle",
+          )}
         />
+
+        {/* Faux input — clicking anywhere opens the overlay */}
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate text-sm font-medium",
+            isDark ? "text-white/85" : "text-ink-muted",
+          )}
+        >
+          Search a look
+        </span>
+
+        {/* Switchable mode pill — mic / camera */}
+        <div
+          className={cn(
+            "relative flex items-center rounded-full p-0.5 transition-colors",
+            isDark ? "bg-white/15" : "bg-[#f0f0f0]",
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ModeButton
+            onClick={openOverlay("voice")}
+            ariaLabel="AI voice search"
+            isDark={isDark}
+          >
+            <IconMic />
+          </ModeButton>
+          <ModeButton
+            onClick={openOverlay("visual")}
+            ariaLabel="AI visual search"
+            isDark={isDark}
+          >
+            <IconCamera />
+          </ModeButton>
+        </div>
       </div>
-    </form>
+
+      <SearchOverlay
+        open={overlayOpen}
+        initialMode={overlayMode}
+        onClose={() => setOverlayOpen(false)}
+      />
+    </>
   );
 }
 
 function ModeButton({
-  active,
   onClick,
   ariaLabel,
   isDark,
   children,
 }: {
-  active: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   ariaLabel: string;
   isDark: boolean;
   children: React.ReactNode;
@@ -145,18 +110,13 @@ function ModeButton({
     <button
       type="button"
       onClick={onClick}
-      aria-pressed={active}
       aria-label={ariaLabel}
       title={ariaLabel}
       className={cn(
         "relative z-10 flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-        active
-          ? isDark
-            ? "bg-white text-ink shadow-sm"
-            : "bg-ink text-white shadow-sm"
-          : isDark
-            ? "text-white/80 hover:text-white"
-            : "text-ink/70 hover:text-ink"
+        isDark
+          ? "text-white/80 hover:text-white"
+          : "text-ink/70 hover:text-ink",
       )}
     >
       {children}
@@ -183,7 +143,6 @@ function IconSearch({ className }: { className?: string }) {
 }
 
 function IconMic() {
-  // Bolder mic strokes + larger black AI sparkle in the top-right corner.
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" shapeRendering="geometricPrecision" aria-hidden>
       <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -191,7 +150,6 @@ function IconMic() {
         <path d="M5 11a7 7 0 0 0 14 0" />
         <path d="M12 18v3" />
       </g>
-      {/* 4-point sparkle, center (19, 3.5), outer radius 3.5 */}
       <path
         d="M19 0l1.2 2.3L22.5 3.5l-2.3 1.2L19 7l-1.2-2.3L15.5 3.5l2.3-1.2z"
         fill="var(--color-ink)"
@@ -201,7 +159,6 @@ function IconMic() {
 }
 
 function IconCamera() {
-  // Bolder camera strokes + matching black AI sparkle.
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" shapeRendering="geometricPrecision" aria-hidden>
       <g fill="none" stroke="currentColor" strokeWidth="2">

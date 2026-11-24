@@ -45,7 +45,7 @@ export function ChapterHow() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white">
             How it works
           </p>
-          <h2 className="font-serif text-2xl text-white sm:text-3xl">
+          <h2 className="font-serif text-2xl text-white sm:text-3xl lg:text-4xl">
             Five steps, three doors in.
           </h2>
           <p className="max-w-xl text-sm text-white/65">

@@ -74,12 +74,14 @@ export function ChapterCreatorProgram() {
           <div className="mt-2 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/creators/apply"
+              style={{ fontFamily: "var(--font-raleway)" }}
               className="inline-flex items-center gap-2 bg-white px-8 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white/90"
             >
               Apply as a creator
             </Link>
             <Link
               href="/creators"
+              style={{ fontFamily: "var(--font-raleway)" }}
               className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/80 underline-offset-[6px] hover:text-white hover:underline"
             >
               See how it works

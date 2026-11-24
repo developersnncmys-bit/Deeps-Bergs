@@ -150,6 +150,17 @@ export function Footer() {
             <Link href="/policies/privacy" className="hover:text-white">Privacy Policy</Link>
             <Link href="/policies/terms" className="hover:text-white">Terms of Use</Link>
             <Link href="/policies/cookies" className="hover:text-white">Cookies</Link>
+            <span className="text-white/40">
+              Designed &amp; developed by{" "}
+              <a
+                href="https://www.nakshatranamahacreations.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
+              >
+                Nakshatra Namaha Creations
+              </a>
+            </span>
           </div>
         </Container>
       </div>

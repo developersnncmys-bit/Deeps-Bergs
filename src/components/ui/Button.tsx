@@ -28,15 +28,24 @@ type CommonProps = {
   children: React.ReactNode;
 };
 
+// Every CTA renders in Raleway by default. Callers can still pass a `style`
+// override and it will win because we spread `style` last.
+const ctaFont = { fontFamily: "var(--font-raleway)" } as const;
+
 export function Button({
   variant = "primary",
   size = "md",
   className,
   children,
+  style,
   ...rest
 }: CommonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button className={cn(base, variants[variant], sizes[size], className)} {...rest}>
+    <button
+      className={cn(base, variants[variant], sizes[size], className)}
+      style={{ ...ctaFont, ...style }}
+      {...rest}
+    >
       {children}
     </button>
   );
@@ -48,10 +57,16 @@ export function LinkButton({
   className,
   children,
   href,
+  style,
   ...rest
 }: CommonProps & React.ComponentProps<typeof Link>) {
   return (
-    <Link href={href} className={cn(base, variants[variant], sizes[size], className)} {...rest}>
+    <Link
+      href={href}
+      className={cn(base, variants[variant], sizes[size], className)}
+      style={{ ...ctaFont, ...style }}
+      {...rest}
+    >
       {children}
     </Link>
   );
