@@ -10,11 +10,26 @@ import { TbArrowUpRight } from "react-icons/tb";
 const AUTO_SCROLL_MS = 1800;
 
 export function ChapterCreatorProgram() {
+  const sectionRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(false);
+
+  // Only arm the auto-scroll once the strip is actually on screen — otherwise
+  // the carousel silently cycles while the user is nowhere near it.
+  useEffect(() => {
+    const target = scrollRef.current ?? sectionRef.current;
+    if (!target) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.4 },
+    );
+    io.observe(target);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || !inView) return;
     const el = scrollRef.current;
     if (!el) return;
 
@@ -28,12 +43,13 @@ export function ChapterCreatorProgram() {
     }, AUTO_SCROLL_MS);
 
     return () => window.clearInterval(id);
-  }, [paused]);
+  }, [paused, inView]);
 
   return (
     <section
+      ref={sectionRef}
       id="chapter-creator-program"
-      className="scroll-mt-20 bg-black py-16 text-white sm:py-20 lg:py-24"
+      className="scroll-mt-20 bg-black pt-16 pb-4 text-white sm:pt-20 sm:pb-6 lg:pt-24 lg:pb-8"
     >
       {/* Heading + CTA */}
       <Container>

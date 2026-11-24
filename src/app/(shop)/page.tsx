@@ -9,6 +9,7 @@ import { AiToolkitStrip } from "@/components/home/AiToolkitStrip";
 import { ChapterVideos } from "@/components/home/ChapterVideos";
 import { ChapterCreatorProgram } from "@/components/home/ChapterCreatorProgram";
 import { ChapterStory } from "@/components/home/ChapterStory";
+import { ChapterMembership } from "@/components/home/ChapterMembership";
 import { AiFeaturesStrip } from "@/components/home/AiFeaturesStrip";
 import { SectionIndex, type ChapterEntry } from "@/components/home/SectionIndex";
 import { InView } from "@/components/home/InView";
@@ -36,13 +37,18 @@ export default function HomePage() {
       </InView>
       {/* Not wrapped in InView — InView uses translate which breaks position: sticky inside. */}
       <ChapterModeSplit />
-      {/* Categories is NOT wrapped in InView — InView uses translate-y which
-          breaks position: sticky inside. Categories is sticky so ChapterRent
-          can slide up over it. */}
-      <ChapterCategories />
-      <InView>
+      {/* Scope the Categories-sticky / Rent-slide-over effect to this
+          wrapper only. Without a bounded containing block, the sticky
+          Categories would stay active for the entire page scroll (since
+          <main> wraps everything) and bleed into later sections.
+          Inside: Categories pins at top, Rent slides up over it. The moment
+          the user scrolls past Rent, this wrapper's bottom crosses the
+          sticky offset and Categories unsticks — leaving every other
+          section untouched. */}
+      <div className="relative">
+        <ChapterCategories />
         <ChapterRent />
-      </InView>
+      </div>
       <InView>
         <NewArrivalsCarousel />
       </InView>
@@ -62,6 +68,9 @@ export default function HomePage() {
       </InView>
       <InView>
         <ChapterCreatorProgram />
+      </InView>
+      <InView>
+        <ChapterMembership />
       </InView>
       <InView>
         <ChapterHow />

@@ -19,9 +19,12 @@ export function ChapterCategories() {
   return (
     <section
       id="chapter-categories"
-      // sticky + z-0 pins Categories at viewport top so ChapterRent (z-10) can
-      // slide up over it as the user keeps scrolling.
-      className="sticky top-0 z-0 scroll-mt-20 bg-surface py-14 sm:py-16 lg:py-20"
+      // sticky top-0 z-0 pins Categories at viewport top; ChapterRent (z-10)
+      // slides up over it. Extra pb extends the "hold" — how long Categories
+      // stays pinned before Rent catches up — without leaking into other
+      // sections, because the parent wrapper in page.tsx now scopes the
+      // sticky containing block.
+      className="sticky top-0 z-0 scroll-mt-20 bg-surface pt-14 pb-48 sm:pt-16 sm:pb-64 lg:pt-20 lg:pb-80"
     >
       {/* Header row — title left, view all right */}
       <Container className="lg:max-w-none">

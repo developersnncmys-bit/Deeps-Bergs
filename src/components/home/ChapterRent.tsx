@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
@@ -15,8 +18,9 @@ export function ChapterRent() {
     <section
       id="chapter-rent"
       // relative z-10 + opaque bg so this section slides up over the sticky
-      // ChapterCategories (z-0) that sits pinned behind it.
-      className="relative z-10 scroll-mt-20 border-t border-line bg-bg pt-16 sm:pt-20 lg:pt-24"
+      // ChapterCategories (z-0). No border-t — it reads as a flicker line
+      // during the slide.
+      className="relative z-10 scroll-mt-20 bg-bg pt-16 sm:pt-20 lg:pt-24"
     >
       <Container className="lg:max-w-none">
         {/* ── Row 1 ── Editorial hero: text (left) + big image (right) ── */}
@@ -28,12 +32,10 @@ export function ChapterRent() {
             </p>
 
             <h2
-              className="text-[clamp(3.5rem,7vw,6rem)] leading-[0.95] text-brand-dark"
+              className="whitespace-pre-line text-[clamp(3.5rem,7vw,6rem)] leading-[0.95] text-brand-dark"
               style={{ fontFamily: "var(--font-great-vibes)" }}
             >
-              Rent the
-              <br />
-              Occasion.
+              <Typewriter text={"Rent the\nOccasion."} />
             </h2>
 
             <p className="max-w-md text-base text-ink-muted">
@@ -107,5 +109,79 @@ export function ChapterRent() {
         <LooksCarousel />
       </div>
     </section>
+  );
+}
+
+/* ──────────── Typewriter — loops: types, holds, erases, holds, repeats ──────────── */
+
+function Typewriter({
+  text,
+  typeSpeed = 95,
+  eraseSpeed = 40,
+  holdAfterTypeMs = 1800,
+  holdAfterEraseMs = 500,
+}: {
+  text: string;
+  typeSpeed?: number;
+  eraseSpeed?: number;
+  holdAfterTypeMs?: number;
+  holdAfterEraseMs?: number;
+}) {
+  const [shown, setShown] = useState("");
+  const [inView, setInView] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  // Only animate when the heading is on screen.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => setInView(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) return;
+    let cancelled = false;
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, ms);
+      });
+
+    const run = async () => {
+      while (!cancelled) {
+        for (let i = 1; i <= text.length; i++) {
+          if (cancelled) return;
+          setShown(text.slice(0, i));
+          await wait(typeSpeed);
+        }
+        await wait(holdAfterTypeMs);
+        if (cancelled) return;
+        for (let i = text.length - 1; i >= 0; i--) {
+          if (cancelled) return;
+          setShown(text.slice(0, i));
+          await wait(eraseSpeed);
+        }
+        await wait(holdAfterEraseMs);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [inView, text, typeSpeed, eraseSpeed, holdAfterTypeMs, holdAfterEraseMs]);
+
+  return (
+    <span ref={ref}>
+      {shown}
+      <span
+        aria-hidden
+        className="ml-0.5 inline-block h-[0.75em] w-[3px] translate-y-1 animate-pulse bg-brand-dark align-middle"
+      />
+    </span>
   );
 }

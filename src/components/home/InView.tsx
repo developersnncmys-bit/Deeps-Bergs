@@ -46,9 +46,13 @@ export function InView({
     <As
       ref={ref}
       style={shown && delayMs ? { transitionDelay: `${delayMs}ms` } : undefined}
+      // Opacity-only entrance — no translate so the section never shifts out
+      // of its natural layout slot (which was leaving a strip of body bg
+      // visible above entering sections). Starts at a non-zero opacity so
+      // there's no "see-through" moment where content behind could bleed in.
       className={cn(
-        "transition-all duration-700 ease-out will-change-[opacity,transform]",
-        shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
+        "transition-opacity duration-500 ease-out",
+        shown ? "opacity-100" : "opacity-0",
         className
       )}
     >

@@ -37,7 +37,7 @@ export function ChapterHow() {
   return (
     <section
       id="chapter-how"
-      className="scroll-mt-20 bg-[#141414] py-14 text-white sm:py-16 lg:py-20"
+      className="scroll-mt-20 bg-black py-10 text-white sm:py-12 lg:py-14"
     >
       <Container>
         {/* Header */}

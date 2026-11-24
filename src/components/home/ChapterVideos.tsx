@@ -19,6 +19,7 @@ type VideoCard = {
   poster: string;
   href: string;
   label: string;
+  caption: string;
   video?: string;
   source:
     | { kind: "brand" }
@@ -33,6 +34,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/party-ready",
     label: "Party ready",
+    caption: "That bronze-hour glow ✨ styled this tissue saree three ways — swipe for the drape. #DBFParty",
     source: { kind: "brand" },
     taggedProduct: {
       name: "Bronze tissue saree",
@@ -47,6 +49,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/bridal-trial",
     label: "Bridal trial",
+    caption: "Peach, pearls & zardozi — my try-on day for this one took 4 hours and I'd do it again 🤍 #BridalDiaries",
     source: {
       kind: "creator",
       handle: "@ananya.k",
@@ -65,6 +68,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/rent-the-set",
     label: "Rent the set",
+    caption: "Wine sequins for sangeet night — rented for 4 days, no storage, no dry-clean bill. Worth it.",
     source: { kind: "brand" },
     taggedProduct: {
       name: "Wine sequin lehenga — rent",
@@ -79,6 +83,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/menswear-drop",
     label: "Menswear drop",
+    caption: "The ivory sherwani I'm wearing to my cousin's reception. Clean cut, no overdone bling. #GroomFit",
     source: {
       kind: "creator",
       handle: "@rahul.m",
@@ -97,6 +102,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/mehendi-morning",
     label: "Mehendi morning",
+    caption: "Marigold organza + fresh gajra = the easiest mehendi look I've styled all season 🌼 tap the tag to shop.",
     source: {
       kind: "creator",
       handle: "@studio.ira",
@@ -115,6 +121,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/reception-shine",
     label: "Reception shine",
+    caption: "Reception-ready in under a minute — this champagne drape saree comes pre-pinned. No safety pins, promise.",
     source: { kind: "brand" },
     taggedProduct: {
       name: "Champagne drape saree",
@@ -129,6 +136,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/festive-edit",
     label: "Festive edit",
+    caption: "Jade kurta set for the pooja, roti & gossip combo. Light, breathable, pocketed. (yes, pockets) 💚",
     source: {
       kind: "creator",
       handle: "@maya.r",
@@ -147,6 +155,7 @@ const cards: VideoCard[] = [
     video: "/images/try-on.mp4",
     href: "/videos/daywear-drop",
     label: "Daywear drop",
+    caption: "Everyday linen, done deliberately. The co-ord set I'm basically living in this week. #DaywearDrop",
     source: { kind: "brand" },
     taggedProduct: {
       name: "Linen co-ord set",
@@ -162,10 +171,23 @@ const AUTO_SCROLL_MS = 1800;
 export function ChapterVideos() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(false);
   const [openCard, setOpenCard] = useState<VideoCard | null>(null);
 
+  // Only arm the auto-scroll once the strip is on screen.
   useEffect(() => {
-    if (paused || openCard) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (paused || openCard || !inView) return;
     const el = scrollRef.current;
     if (!el) return;
 
@@ -179,7 +201,7 @@ export function ChapterVideos() {
     }, AUTO_SCROLL_MS);
 
     return () => window.clearInterval(id);
-  }, [paused, openCard]);
+  }, [paused, openCard, inView]);
 
   return (
     <section
@@ -267,9 +289,6 @@ function VideoTile({ card, onOpen }: { card: VideoCard; onOpen: () => void }) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/20" />
 
       <SourceChip source={card.source} />
-      <p className="pointer-events-none absolute left-4 top-14 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/90">
-        {card.label}
-      </p>
       <PlayGlyph />
 
       {/* Click target for the video — opens the modal */}
@@ -277,14 +296,43 @@ function VideoTile({ card, onOpen }: { card: VideoCard; onOpen: () => void }) {
         type="button"
         onClick={onOpen}
         aria-label={`Watch ${card.label}`}
-        className="absolute inset-x-0 top-0 bottom-[84px] z-10"
+        className="absolute inset-x-0 top-0 bottom-[150px] z-10"
       />
 
-      {/* Product tag — hidden by default, reveals on hover */}
-      <div className="pointer-events-none opacity-0 transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
-        <ProductTag product={card.taggedProduct} />
-      </div>
+      {/* Reel-style caption — sits just above the product tag */}
+      <ReelCaption caption={card.caption} />
+
+      {/* Product tag — always visible */}
+      <ProductTag product={card.taggedProduct} />
     </article>
+  );
+}
+
+function ReelCaption({ caption }: { caption: string }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="pointer-events-auto absolute inset-x-3 bottom-[70px] z-10 text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
+      <p
+        className={
+          "text-[12.5px] leading-[1.4] text-white/95 " +
+          (expanded ? "" : "line-clamp-2")
+        }
+      >
+        {caption}
+      </p>
+      {caption.length > 70 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+          className="mt-0.5 text-[11px] font-semibold text-white/70 hover:text-white"
+        >
+          {expanded ? "less" : "more"}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -338,11 +386,9 @@ function VideoModal({ card, onClose }: { card: VideoCard; onClose: () => void })
         {/* Subtle gradient so chips/tags read on busy footage */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
 
-        {/* Source chip + label */}
+        {/* Source chip + reel caption */}
         <SourceChip source={card.source} />
-        <p className="pointer-events-none absolute left-4 top-14 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/90">
-          {card.label}
-        </p>
+        <ReelCaption caption={card.caption} />
 
         {/* Close */}
         <button
