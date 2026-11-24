@@ -14,7 +14,9 @@ export function ChapterRent() {
   return (
     <section
       id="chapter-rent"
-      className="scroll-mt-20 border-t border-line bg-bg pt-16 sm:pt-20 lg:pt-24"
+      // relative z-10 + opaque bg so this section slides up over the sticky
+      // ChapterCategories (z-0) that sits pinned behind it.
+      className="relative z-10 scroll-mt-20 border-t border-line bg-bg pt-16 sm:pt-20 lg:pt-24"
     >
       <Container className="lg:max-w-none">
         {/* ── Row 1 ── Editorial hero: text (left) + big image (right) ── */}

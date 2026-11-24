@@ -65,7 +65,8 @@ export function ChapterPromise() {
           <LinkButton
             href="/s/wedding"
             size="md"
-            className="!rounded-none bg-white px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-ink hover:bg-white/90"
+            style={{ fontFamily: "var(--font-raleway)" }}
+            className="!rounded-none bg-white px-7 text-[12px] font-black uppercase tracking-[0.18em] text-ink hover:bg-white/90"
           >
             Shop the Collection
           </LinkButton>
@@ -73,7 +74,8 @@ export function ChapterPromise() {
             href="#chapter-buy"
             size="md"
             variant="ghost"
-            className="!rounded-none px-2 text-[12px] font-bold uppercase tracking-[0.18em] text-white underline-offset-[6px] hover:bg-transparent hover:underline"
+            style={{ fontFamily: "var(--font-raleway)" }}
+            className="!rounded-none px-2 text-[12px] font-black uppercase tracking-[0.18em] text-white underline-offset-[6px] hover:bg-transparent hover:underline"
           >
             Scroll to explore &darr;
           </LinkButton>

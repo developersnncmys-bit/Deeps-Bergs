@@ -91,6 +91,70 @@ const cards: VideoCard[] = [
       href: "/p/ivory-sherwani",
     },
   },
+  {
+    id: "v-005",
+    poster: "/images/rental/Mehendi.png",
+    video: "/images/try-on.mp4",
+    href: "/videos/mehendi-morning",
+    label: "Mehendi morning",
+    source: {
+      kind: "creator",
+      handle: "@studio.ira",
+      avatar: "/images/category/co-ord.png",
+    },
+    taggedProduct: {
+      name: "Marigold organza set",
+      price: "₹26,500",
+      thumb: "/images/rental/Mehendi.png",
+      href: "/p/marigold-organza-set",
+    },
+  },
+  {
+    id: "v-006",
+    poster: "/images/rental/reception.png",
+    video: "/images/try-on.mp4",
+    href: "/videos/reception-shine",
+    label: "Reception shine",
+    source: { kind: "brand" },
+    taggedProduct: {
+      name: "Champagne drape saree",
+      price: "₹38,000",
+      thumb: "/images/rental/reception.png",
+      href: "/p/champagne-drape-saree",
+    },
+  },
+  {
+    id: "v-007",
+    poster: "/images/rental/festive.png",
+    video: "/images/try-on.mp4",
+    href: "/videos/festive-edit",
+    label: "Festive edit",
+    source: {
+      kind: "creator",
+      handle: "@maya.r",
+      avatar: "/images/category/kurtas-sets.png",
+    },
+    taggedProduct: {
+      name: "Jade kurta set",
+      price: "₹14,800",
+      thumb: "/images/category/kurtas-sets.png",
+      href: "/p/jade-kurta-set",
+    },
+  },
+  {
+    id: "v-008",
+    poster: "/images/category/co-ord.png",
+    video: "/images/try-on.mp4",
+    href: "/videos/daywear-drop",
+    label: "Daywear drop",
+    source: { kind: "brand" },
+    taggedProduct: {
+      name: "Linen co-ord set",
+      price: "₹9,500",
+      thumb: "/images/category/co-ord.png",
+      href: "/p/linen-coord-set",
+    },
+  },
 ];
 
 const AUTO_SCROLL_MS = 1800;
@@ -137,20 +201,50 @@ export function ChapterVideos() {
         </div>
       </Container>
 
-      <div
-        ref={scrollRef}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
-        className="no-scrollbar overflow-x-auto scroll-smooth"
-      >
-        <div className="flex snap-x snap-mandatory gap-4 px-4 sm:gap-5 sm:px-6 lg:gap-6 lg:px-10">
-          {cards.map((c) => (
-            <VideoTile key={c.id} card={c} onOpen={() => setOpenCard(c)} />
-          ))}
-          <div className="w-4 shrink-0 sm:w-6 lg:w-10" aria-hidden />
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={() => setPaused(true)}
+          onTouchEnd={() => setPaused(false)}
+          className="no-scrollbar overflow-x-auto scroll-smooth"
+        >
+          <div className="flex snap-x snap-mandatory gap-4 px-4 sm:gap-5 sm:px-6 lg:gap-6 lg:px-10">
+            {cards.map((c) => (
+              <VideoTile key={c.id} card={c} onOpen={() => setOpenCard(c)} />
+            ))}
+            <div className="w-4 shrink-0 sm:w-6 lg:w-10" aria-hidden />
+          </div>
         </div>
+
+        {/* Prev / Next arrows */}
+        <button
+          type="button"
+          onClick={() =>
+            scrollRef.current?.scrollBy({
+              left: -(scrollRef.current.clientWidth / 4 + 20),
+              behavior: "smooth",
+            })
+          }
+          aria-label="Previous reel"
+          className="absolute left-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white/95 text-ink shadow-md backdrop-blur transition-colors hover:border-ink hover:bg-white sm:flex lg:left-5"
+        >
+          <ReelChevron direction="left" />
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            scrollRef.current?.scrollBy({
+              left: scrollRef.current.clientWidth / 4 + 20,
+              behavior: "smooth",
+            })
+          }
+          aria-label="Next reel"
+          className="absolute right-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white/95 text-ink shadow-md backdrop-blur transition-colors hover:border-ink hover:bg-white sm:flex lg:right-5"
+        >
+          <ReelChevron direction="right" />
+        </button>
       </div>
 
       {openCard && (
@@ -186,7 +280,10 @@ function VideoTile({ card, onOpen }: { card: VideoCard; onOpen: () => void }) {
         className="absolute inset-x-0 top-0 bottom-[84px] z-10"
       />
 
-      <ProductTag product={card.taggedProduct} />
+      {/* Product tag — hidden by default, reveals on hover */}
+      <div className="pointer-events-none opacity-0 transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
+        <ProductTag product={card.taggedProduct} />
+      </div>
     </article>
   );
 }
@@ -332,7 +429,7 @@ function SourceChip({ source }: { source: VideoCard["source"] }) {
     );
   }
   return (
-    <span className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-[4px] bg-white/95 py-1 pl-1 pr-3 text-[11px] font-semibold text-ink shadow-sm">
+    <span className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-[4px] border border-white bg-transparent py-1 pl-1 pr-3 text-[11px] font-semibold text-white">
       <span className="relative h-5 w-5 overflow-hidden rounded-[3px]">
         <Image src={source.avatar} alt="" fill sizes="20px" className="object-cover" />
       </span>
@@ -358,6 +455,18 @@ function CheckIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden>
       <path d="M5 12l5 5 9-11" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ReelChevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path
+        d={direction === "left" ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

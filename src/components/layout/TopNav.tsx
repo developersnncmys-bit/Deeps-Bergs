@@ -6,14 +6,22 @@ import Image from "next/image";
 import { MenuButton } from "./MenuButton";
 import { SearchTrigger } from "./SearchTrigger";
 import { SearchBar } from "./SearchBar";
+import { categories } from "@/lib/mock-data";
+import type { SectionId } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const navLinks = [
-  { label: "Wedding", href: "/s/wedding" },
-  { label: "Contemporary", href: "/s/contemporary" },
-  { label: "Activewear", href: "/s/activewear" },
+type NavLink = {
+  label: string;
+  href: string;
+  sectionId?: SectionId; // present → shows mega-menu dropdown on hover
+};
+
+const navLinks: NavLink[] = [
+  { label: "Wedding", href: "/s/wedding", sectionId: "wedding" },
+  { label: "Contemporary", href: "/s/contemporary", sectionId: "contemporary" },
+  { label: "Activewear", href: "/s/activewear", sectionId: "activewear" },
   { label: "Rent", href: "/rent" },
-  { label: "New", href: "/new" },
+  { label: "New In", href: "/new" },
   { label: "Stylist", href: "/stylist" },
   { label: "Membership", href: "/membership" },
 ];
@@ -24,6 +32,22 @@ export function TopNav() {
   // Hide on scroll-down, show on scroll-up. Always visible near the top.
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
+
+  // Mega-menu: which section (if any) is currently hovered.
+  const [openSection, setOpenSection] = useState<SectionId | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openMenu = (sid: SectionId) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenSection(sid);
+  };
+  const scheduleClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpenSection(null), 120);
+  };
+  const keepOpen = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
 
   useEffect(() => {
     lastY.current = window.scrollY;
@@ -79,7 +103,12 @@ export function TopNav() {
         </div>
 
         {/* Center logo */}
-        <Link href="/" className="justify-self-center inline-flex items-center" aria-label="Deeps & Bergs — home">
+        <Link
+          href="/"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="justify-self-center inline-flex items-center"
+          aria-label="Deeps & Bergs — home"
+        >
           <Image
             src="/logov6.png"
             alt="Deeps & Bergs"
@@ -136,21 +165,105 @@ export function TopNav() {
       <div className="hidden border-t border-line lg:block">
         <div className="flex h-11 items-center gap-6 px-10">
           <nav className="flex flex-1 items-center justify-center gap-7">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-[13px] font-bold uppercase tracking-[0.2em] text-ink hover:text-brand transition-colors"
-                style={{ fontFamily: "var(--font-raleway)" }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const hasMega = Boolean(link.sectionId);
+              const active = hasMega && openSection === link.sectionId;
+              return (
+                <div
+                  key={link.href}
+                  onMouseEnter={hasMega ? () => openMenu(link.sectionId!) : undefined}
+                  onMouseLeave={hasMega ? scheduleClose : undefined}
+                  className="flex h-full items-center"
+                >
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "text-[13px] font-bold uppercase tracking-[0.2em] transition-colors",
+                      active ? "text-brand" : "text-ink hover:text-brand"
+                    )}
+                    style={{ fontFamily: "var(--font-raleway)" }}
+                  >
+                    {link.label}
+                  </Link>
+                </div>
+              );
+            })}
           </nav>
-
         </div>
       </div>
+
+      {/* ─── MEGA-MENU PANEL (desktop only) ─── */}
+      {openSection && (
+        <div
+          onMouseEnter={keepOpen}
+          onMouseLeave={scheduleClose}
+          className="absolute left-0 right-0 top-full z-30 hidden border-t border-line bg-surface shadow-[var(--shadow-lg)] lg:block"
+        >
+          <div className="mx-auto max-w-[var(--container-page)] px-10 py-8">
+            <MegaMenu sectionId={openSection} />
+          </div>
+        </div>
+      )}
     </header>
+  );
+}
+
+/* ─────────── Mega-menu ─────────── */
+
+function MegaMenu({ sectionId }: { sectionId: SectionId }) {
+  const items = categories.filter((c) => c.sectionId === sectionId);
+  return (
+    <div className="animate-fade-in">
+      <div className="mb-5 flex items-end justify-between">
+        <p
+          className="text-[11px] font-bold uppercase tracking-[0.3em] text-ink-muted"
+          style={{ fontFamily: "var(--font-raleway)" }}
+        >
+          Shop {sectionId}
+        </p>
+        <Link
+          href={`/s/${sectionId}`}
+          className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink underline-offset-[6px] hover:text-brand hover:underline"
+          style={{ fontFamily: "var(--font-raleway)" }}
+        >
+          View all &rarr;
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-5 gap-5">
+        {items.map((cat) => (
+          <Link
+            key={cat.id}
+            href={`/s/${cat.sectionId}/${cat.slug}`}
+            className="group flex flex-col gap-3"
+          >
+            <div className="relative aspect-[4/5] overflow-hidden bg-bg">
+              {cat.image ? (
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  sizes="(min-width: 1024px) 15vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-bg">
+                  <span className="text-5xl font-black text-ink-subtle/30">
+                    {cat.name[0]}
+                  </span>
+                </div>
+              )}
+            </div>
+            <p
+              className="text-center text-[12px] font-bold uppercase tracking-[0.18em] text-ink group-hover:text-brand"
+              style={{ fontFamily: "var(--font-raleway)" }}
+            >
+              {cat.name}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 

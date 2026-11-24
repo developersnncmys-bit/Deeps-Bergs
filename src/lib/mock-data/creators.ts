@@ -8,6 +8,7 @@ export const creators: Creator[] = [
     bio: "Bridal stylist · 12 looks curated",
     avatar: "/images/rental/wedding-guest.png",
     cover: "/images/category/bridal.png",
+    video: "/images/try-on.mp4",
     productIds: ["p-001", "p-006"],
   },
   {

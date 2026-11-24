@@ -19,7 +19,9 @@ export function ChapterCategories() {
   return (
     <section
       id="chapter-categories"
-      className="scroll-mt-20 bg-surface py-14 sm:py-16 lg:py-20"
+      // sticky + z-0 pins Categories at viewport top so ChapterRent (z-10) can
+      // slide up over it as the user keeps scrolling.
+      className="sticky top-0 z-0 scroll-mt-20 bg-surface py-14 sm:py-16 lg:py-20"
     >
       {/* Header row — title left, view all right */}
       <Container className="lg:max-w-none">

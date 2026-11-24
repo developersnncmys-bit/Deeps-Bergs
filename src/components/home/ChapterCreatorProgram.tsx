@@ -89,13 +89,27 @@ export function ChapterCreatorProgram() {
               href={`/creators/${c.handle}`}
               className="group relative aspect-[3/4] w-[70vw] shrink-0 snap-start overflow-hidden rounded-[var(--radius-xl)] bg-surface shadow-[0_25px_60px_-15px_rgba(255,255,255,0.18)] ring-1 ring-white/10 sm:w-[42vw] lg:w-[22vw]"
             >
-              <Image
-                src={c.cover}
-                alt={c.name}
-                fill
-                sizes="(min-width: 1024px) 22vw, (min-width: 640px) 42vw, 70vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              {c.video ? (
+                <video
+                  src={c.video}
+                  poster={c.cover}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-label={c.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <Image
+                  src={c.cover}
+                  alt={c.name}
+                  fill
+                  sizes="(min-width: 1024px) 22vw, (min-width: 640px) 42vw, 70vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
               {/* Creator chip — bottom left */}
               <span className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full border border-white/90 bg-transparent py-1 pl-1 pr-3 text-[11px] font-semibold text-white">
                 <span className="relative h-5 w-5 overflow-hidden rounded-full">

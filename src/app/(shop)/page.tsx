@@ -36,9 +36,10 @@ export default function HomePage() {
       </InView>
       {/* Not wrapped in InView — InView uses translate which breaks position: sticky inside. */}
       <ChapterModeSplit />
-      <InView>
-        <ChapterCategories />
-      </InView>
+      {/* Categories is NOT wrapped in InView — InView uses translate-y which
+          breaks position: sticky inside. Categories is sticky so ChapterRent
+          can slide up over it. */}
+      <ChapterCategories />
       <InView>
         <ChapterRent />
       </InView>

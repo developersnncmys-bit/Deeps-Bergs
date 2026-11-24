@@ -8,7 +8,7 @@ export function AskAiFab() {
     <Link
       href="/assistant"
       aria-label="Ask AI"
-      className="group fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-ink py-3 pl-4 pr-5 text-white shadow-xl transition-all hover:bg-brand hover:shadow-2xl sm:bottom-8 sm:right-8"
+      className="group fixed bottom-[60px] right-5 z-50 flex items-center gap-2 rounded-full bg-ink py-3 pl-4 pr-5 text-white shadow-xl transition-all hover:bg-brand hover:shadow-2xl sm:bottom-[72px] sm:right-8"
     >
       <span className="relative inline-flex h-6 w-6 items-center justify-center">
         <span

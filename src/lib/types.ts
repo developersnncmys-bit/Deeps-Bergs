@@ -165,5 +165,6 @@ export interface Creator {
   bio: string;
   avatar: string;
   cover: string;
+  video?: string;
   productIds: string[];
 }

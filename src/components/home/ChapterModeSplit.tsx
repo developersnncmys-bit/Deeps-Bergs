@@ -157,7 +157,7 @@ function ModeTile({
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/55" />
 
-      <h2 className="absolute left-8 top-10 font-serif text-5xl tracking-tight text-white sm:left-12 sm:top-14 sm:text-6xl lg:left-16 lg:top-16 lg:text-7xl">
+      <h2 className="absolute left-8 top-10 font-serif text-4xl tracking-tight text-white sm:left-12 sm:top-14 sm:text-5xl lg:left-16 lg:top-16 lg:text-6xl">
         {label}
       </h2>
 

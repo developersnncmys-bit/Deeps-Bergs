@@ -85,58 +85,81 @@ export function AiToolkitStrip() {
   );
 }
 
-/* ──────────── Typewriter — types out `text` letter-by-letter when scrolled into view ──────────── */
+/* ──────────── Typewriter — loops: types out, holds, erases, holds, repeats ──────────── */
 
 function Typewriter({
   text,
-  speed = 45,
+  typeSpeed = 55,
+  eraseSpeed = 25,
+  holdAfterTypeMs = 1500,
+  holdAfterEraseMs = 400,
 }: {
   text: string;
-  speed?: number;
+  typeSpeed?: number;
+  eraseSpeed?: number;
+  holdAfterTypeMs?: number;
+  holdAfterEraseMs?: number;
 }) {
   const [shown, setShown] = useState("");
-  const [started, setStarted] = useState(false);
+  const [inView, setInView] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
-  // Start when the heading scrolls into view (so the animation feels earned, not spent on load)
+  // Only animate while the heading is on screen (saves work and keeps the
+  // effect feeling "earned" when the user scrolls to it).
   useEffect(() => {
     const el = ref.current;
-    if (!el || started) return;
+    if (!el) return;
     const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setStarted(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.3 }
+      (entries) => setInView(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.25 }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [started]);
+  }, []);
 
-  // Type one char at a time
+  // Loop: type → hold → erase → hold → repeat
   useEffect(() => {
-    if (!started) return;
-    let i = 0;
-    const id = setInterval(() => {
-      i++;
-      setShown(text.slice(0, i));
-      if (i >= text.length) clearInterval(id);
-    }, speed);
-    return () => clearInterval(id);
-  }, [started, text, speed]);
+    if (!inView) return;
+    let cancelled = false;
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        const id = window.setTimeout(resolve, ms);
+        // If cancelled while waiting, clear to avoid leaks
+        return () => window.clearTimeout(id);
+      });
 
-  const done = shown.length >= text.length;
+    const run = async () => {
+      while (!cancelled) {
+        // Type
+        for (let i = 1; i <= text.length; i++) {
+          if (cancelled) return;
+          setShown(text.slice(0, i));
+          await wait(typeSpeed);
+        }
+        await wait(holdAfterTypeMs);
+        if (cancelled) return;
+        // Erase
+        for (let i = text.length - 1; i >= 0; i--) {
+          if (cancelled) return;
+          setShown(text.slice(0, i));
+          await wait(eraseSpeed);
+        }
+        await wait(holdAfterEraseMs);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [inView, text, typeSpeed, eraseSpeed, holdAfterTypeMs, holdAfterEraseMs]);
 
   return (
     <span ref={ref}>
       {shown}
       <span
         aria-hidden
-        className={`ml-0.5 inline-block h-[0.9em] w-[2px] translate-y-0.5 bg-brand-dark align-middle ${
-          done ? "opacity-0" : "animate-pulse"
-        }`}
+        className="ml-0.5 inline-block h-[0.9em] w-[2px] translate-y-0.5 animate-pulse bg-brand-dark align-middle"
       />
     </span>
   );
