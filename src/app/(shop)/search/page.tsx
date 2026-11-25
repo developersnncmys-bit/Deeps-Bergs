@@ -61,7 +61,7 @@ function SearchInner() {
   }, [mode, q, activeFacets, parsed.budget, budgetActive]);
 
   // Standard sort + filter state, same shape as ShopCategory.
-  const [sort, setSort] = useState<SortKey>("featured");
+  const [sort, setSort] = useState<SortKey>("relevance");
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
@@ -183,7 +183,7 @@ function SearchInner() {
     setSelectedColors([]);
     setSelectedBrands([]);
     setPriceMax(priceBounds.max);
-    setSort("featured");
+    setSort("relevance");
   };
 
   const eyebrow =

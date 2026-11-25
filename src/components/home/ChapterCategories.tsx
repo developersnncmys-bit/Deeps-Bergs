@@ -33,7 +33,7 @@ export function ChapterCategories() {
             Shop by Category
           </h2>
           <Link
-            href="/categories"
+            href="/shop"
             className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink underline-offset-[6px] hover:underline"
           >
             View All &rarr;
@@ -110,7 +110,7 @@ function CategoryCard({ category }: { category: Category }) {
 function ViewAllCard() {
   return (
     <Link
-      href="/categories"
+      href="/shop"
       className="group relative flex aspect-[3/4] w-[240px] shrink-0 flex-col items-center justify-center gap-4 bg-ink text-center text-white transition-colors hover:bg-ink/90 sm:w-[280px] lg:w-[320px]"
     >
       <span className="font-sans text-2xl font-bold uppercase tracking-[0.18em]">

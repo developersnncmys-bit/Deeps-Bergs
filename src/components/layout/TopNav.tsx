@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { MenuButton } from "./MenuButton";
 import { SearchTrigger } from "./SearchTrigger";
 import { SearchBar } from "./SearchBar";
 import { categories } from "@/lib/mock-data";
 import type { SectionId } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { openAuth, useAuth } from "@/lib/auth";
+import { useCart } from "@/lib/cart/CartContext";
 
 type NavLink = {
   label: string;
@@ -17,6 +20,8 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
+  { label: "Women", href: "/women" },
+  { label: "Men", href: "/men" },
   { label: "Wedding", href: "/s/wedding", sectionId: "wedding" },
   { label: "Contemporary", href: "/s/contemporary", sectionId: "contemporary" },
   { label: "Activewear", href: "/s/activewear", sectionId: "activewear" },
@@ -28,6 +33,14 @@ const navLinks: NavLink[] = [
 
 export function TopNav() {
   const linkCls = "text-ink hover:text-brand transition-colors";
+  const router = useRouter();
+  const { user } = useAuth();
+  const { items: cartItems, openDrawer: openCart } = useCart();
+  const cartCount = cartItems.reduce((n, i) => n + i.quantity, 0);
+  const onUserIconClick = () => {
+    if (user) router.push("/account");
+    else openAuth();
+  };
 
   // Hide on scroll-down, show on scroll-up. Always visible near the top.
   const [hidden, setHidden] = useState(false);
@@ -86,12 +99,12 @@ export function TopNav() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b border-line bg-surface transition-transform duration-300 ease-out",
+        "sticky top-0 z-40 bg-surface shadow-[0_2px_12px_rgba(23,20,15,0.06)] transition-transform duration-300 ease-out",
         hidden ? "-translate-y-full" : "translate-y-0"
       )}
     >
       {/* MAIN ROW — locale (left) · logo (center) · actions (right) */}
-      <div className="grid h-[80px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:gap-6 sm:px-6 lg:px-10">
+      <div className="relative z-10 grid h-[80px] grid-cols-[1fr_auto_1fr] items-center gap-4 bg-surface px-4 shadow-[0_6px_10px_-8px_rgba(23,20,15,0.12)] sm:gap-6 sm:px-6 lg:px-10">
         {/* Left — hamburger on mobile, empty on desktop (keeps logo centered via 1fr grid) */}
         <div className="flex items-center justify-start">
           <MenuButton
@@ -126,14 +139,16 @@ export function TopNav() {
             <SearchBar tone="light" />
           </div>
 
-          {/* Sign In — desktop only */}
-          <Link
-            href="/account"
-            aria-label="Sign in / account"
+          {/* Sign In — desktop only. Opens the auth modal for guests,
+              navigates to /account dashboard once signed in. */}
+          <button
+            type="button"
+            onClick={onUserIconClick}
+            aria-label={user ? "My account" : "Sign in"}
             className={cn("hidden lg:inline-flex", linkCls)}
           >
             <IconUser />
-          </Link>
+          </button>
 
           {/* Search icon — mobile only; desktop has the inline SearchBar */}
           <SearchTrigger className={cn("lg:hidden", linkCls)} />
@@ -147,27 +162,31 @@ export function TopNav() {
             <IconHeart />
           </Link>
 
-          {/* Cart with count */}
-          <Link
-            href="/cart"
-            aria-label="Cart"
+          {/* Cart with count — opens the slide-in CartDrawer */}
+          <button
+            type="button"
+            onClick={openCart}
+            aria-label={`Cart${cartCount > 0 ? ` (${cartCount})` : ""}`}
             className={cn("relative", linkCls)}
           >
             <IconBag />
-            <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white">
-              2
-            </span>
-          </Link>
+            {cartCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
       {/* CATEGORY ROW — desktop only */}
-      <div className="hidden border-t border-line lg:block">
+      <div className="hidden lg:block">
         <div className="flex h-11 items-center gap-6 px-10">
           <nav className="flex flex-1 items-center justify-center gap-7">
             {navLinks.map((link) => {
               const hasMega = Boolean(link.sectionId);
               const active = hasMega && openSection === link.sectionId;
+              const isRent = link.href === "/rent";
               return (
                 <div
                   key={link.href}
@@ -179,9 +198,24 @@ export function TopNav() {
                     href={link.href}
                     className={cn(
                       "text-[13px] font-bold uppercase tracking-[0.2em] transition-colors",
-                      active ? "text-brand" : "text-ink hover:text-brand"
+                      isRent
+                        ? "inline-flex h-7 items-center justify-center bg-ink px-4 leading-none text-white hover:bg-brand-dark"
+                        : active
+                          ? "text-brand"
+                          : "text-ink hover:text-brand"
                     )}
-                    style={{ fontFamily: "var(--font-raleway)" }}
+                    style={{
+                      fontFamily: "var(--font-raleway)",
+                      ...(isRent
+                        ? {
+                            borderRadius: "4px",
+                            // Optical centering — compensate for the trailing
+                            // letter-spacing on the last character so the word
+                            // sits visually centred inside the pill.
+                            textIndent: "0.2em",
+                          }
+                        : {}),
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -200,7 +234,14 @@ export function TopNav() {
           className="absolute left-0 right-0 top-full z-30 hidden border-t border-line bg-surface shadow-[var(--shadow-lg)] lg:block"
         >
           <div className="mx-auto max-w-[var(--container-page)] px-10 py-8">
-            <MegaMenu sectionId={openSection} />
+            {tabbedMegaMenuConfigs[openSection] ? (
+              <TabbedMegaMenu
+                groups={tabbedMegaMenuConfigs[openSection]!.groups}
+                viewAllHref={tabbedMegaMenuConfigs[openSection]!.viewAllHref}
+              />
+            ) : (
+              <MegaMenu sectionId={openSection} />
+            )}
           </div>
         </div>
       )}
@@ -208,36 +249,210 @@ export function TopNav() {
   );
 }
 
-/* ─────────── Mega-menu ─────────── */
+/* ─────────── Tabbed mega-menu (Kalki-style) + per-section configs ─────────── */
 
-function MegaMenu({ sectionId }: { sectionId: SectionId }) {
-  const items = categories.filter((c) => c.sectionId === sectionId);
+type MegaTile = { label: string; image: string; href: string };
+type TabbedGroup = { label: string; tiles: MegaTile[] };
+type TabbedConfig = { groups: Record<string, TabbedGroup>; viewAllHref: string };
+
+const tabbedMegaMenuConfigs: Partial<Record<SectionId, TabbedConfig>> = {
+  wedding: {
+    viewAllHref: "/s/wedding",
+    groups: {
+      category: {
+        label: "Category",
+        tiles: [
+          { label: "Wedding Lehenga", image: "/images/category/Lehengas.png", href: "/c/lehenga" },
+          { label: "Bridal Saree", image: "/images/category/sarees.png", href: "/c/bridal-saree" },
+          { label: "Sherwani", image: "/images/category/sherwanis.png", href: "/c/sherwani" },
+          { label: "Groomswear", image: "/images/category/groomswear.png", href: "/c/groomswear" },
+        ],
+      },
+      occasion: {
+        label: "Occasion",
+        tiles: [
+          { label: "Engagement", image: "/images/rental/festive.png", href: "/rent?occasion=engagement" },
+          { label: "Mehendi", image: "/images/rental/Mehendi.png", href: "/rent?occasion=mehendi" },
+          { label: "Sangeet", image: "/images/rental/sangeet.png", href: "/rent?occasion=sangeet" },
+          { label: "Cocktail", image: "/images/rental/cocktail.png", href: "/rent?occasion=cocktail" },
+          { label: "Wedding", image: "/images/category/bridal.png", href: "/rent?occasion=wedding" },
+          { label: "Reception", image: "/images/rental/reception.png", href: "/rent?occasion=reception" },
+        ],
+      },
+      shopper: {
+        label: "Shopper",
+        tiles: [
+          { label: "Bride", image: "/images/category/bridal.png", href: "/s/wedding?shopper=bride" },
+          { label: "Groom", image: "/images/him/him1.png", href: "/s/wedding?shopper=groom" },
+          { label: "Bridesmaid", image: "/images/rental/wedding-guest.png", href: "/s/wedding?shopper=bridesmaid" },
+          { label: "Groomsman", image: "/images/category/sherwanis.png", href: "/s/wedding?shopper=groomsman" },
+          { label: "Wedding Guest", image: "/images/rental/festive.png", href: "/s/wedding?shopper=guest" },
+        ],
+      },
+    },
+  },
+  contemporary: {
+    viewAllHref: "/s/contemporary",
+    groups: {
+      category: {
+        label: "Category",
+        tiles: [
+          { label: "Sarees", image: "/images/category/sarees.png", href: "/c/sarees" },
+          { label: "Kurtas & Sets", image: "/images/category/kurtas-sets.png", href: "/c/kurtas" },
+          { label: "Co-ords", image: "/images/category/co-ord.png", href: "/c/co-ords" },
+          { label: "Dresses", image: "/images/category/dresses.png", href: "/c/dresses" },
+          { label: "Shirts", image: "/images/category/shirts.png", href: "/c/shirts" },
+        ],
+      },
+      occasion: {
+        label: "Occasion",
+        tiles: [
+          { label: "Daywear", image: "/images/category/co-ord.png", href: "/s/contemporary?occasion=daywear" },
+          { label: "Festive", image: "/images/rental/festive.png", href: "/s/contemporary?occasion=festive" },
+          { label: "Workwear", image: "/images/category/shirts.png", href: "/s/contemporary?occasion=workwear" },
+          { label: "Brunch", image: "/images/category/kurtas-sets.png", href: "/s/contemporary?occasion=brunch" },
+          { label: "Evening", image: "/images/category/dresses.png", href: "/s/contemporary?occasion=evening" },
+        ],
+      },
+      collection: {
+        label: "Collection",
+        tiles: [
+          { label: "Chikankari Edit", image: "/images/category/kurtas-sets.png", href: "/collections/chikankari-edit" },
+          { label: "Linen Capsule", image: "/images/category/co-ord.png", href: "/collections/linen-capsule" },
+          { label: "Workwear Edit", image: "/images/category/shirts.png", href: "/collections/workwear-edit" },
+          { label: "Festive 2026", image: "/images/rental/festive.png", href: "/collections/festive-2026" },
+        ],
+      },
+    },
+  },
+  activewear: {
+    viewAllHref: "/s/activewear",
+    groups: {
+      category: {
+        label: "Category",
+        tiles: [
+          { label: "Tops", image: "/images/3d/products/p-v1.png", href: "/c/tops" },
+          { label: "Bottoms", image: "/images/3d/products/p-v2.png", href: "/c/bottoms" },
+          { label: "Lounge", image: "/images/3d/products/p-v3.png", href: "/c/lounge" },
+          { label: "Outerwear", image: "/images/3d/products/p-v4.png", href: "/c/outerwear" },
+        ],
+      },
+      activity: {
+        label: "Activity",
+        tiles: [
+          { label: "Yoga", image: "/images/3d/products/p-v5.png", href: "/s/activewear?activity=yoga" },
+          { label: "Run", image: "/images/3d/products/p-v6.png", href: "/s/activewear?activity=run" },
+          { label: "Lounge", image: "/images/3d/products/p-v7.png", href: "/s/activewear?activity=lounge" },
+          { label: "Workout", image: "/images/3d/products/p-v8.png", href: "/s/activewear?activity=workout" },
+        ],
+      },
+      collection: {
+        label: "Collection",
+        tiles: [
+          { label: "Studio Essentials", image: "/images/3d/products/p-v1.png", href: "/collections/studio-essentials" },
+          { label: "Everyday Fleece", image: "/images/3d/products/p-v4.png", href: "/collections/everyday-fleece" },
+          { label: "Seamless Edit", image: "/images/3d/products/p-v2.png", href: "/collections/seamless-edit" },
+        ],
+      },
+    },
+  },
+};
+
+function TabbedMegaMenu({
+  groups,
+  viewAllHref,
+}: {
+  groups: Record<string, TabbedGroup>;
+  viewAllHref: string;
+}) {
+  const keys = Object.keys(groups);
+  const [group, setGroup] = useState<string>(keys[0]);
+  const tiles = groups[group]?.tiles ?? [];
+
   return (
-    <div className="animate-fade-in">
-      <div className="mb-5 flex items-end justify-between">
-        <p
-          className="text-[11px] font-bold uppercase tracking-[0.3em] text-ink-muted"
-          style={{ fontFamily: "var(--font-raleway)" }}
-        >
-          Shop {sectionId}
-        </p>
+    <div className="animate-fade-in grid grid-cols-[180px_1fr] gap-8">
+      {/* Left tabs — blush backdrop with a ::before that bleeds 100vw to the left
+          so the blush runs continuously from the viewport edge up to the tiles. */}
+      <aside className="relative flex h-full min-h-[280px] flex-col gap-1 bg-brand-tint p-3 before:absolute before:bottom-0 before:right-full before:top-0 before:w-screen before:bg-brand-tint before:content-['']">
+        {keys.map((k) => {
+          const active = k === group;
+          return (
+            <button
+              key={k}
+              type="button"
+              onMouseEnter={() => setGroup(k)}
+              onFocus={() => setGroup(k)}
+              onClick={() => setGroup(k)}
+              style={{ fontFamily: "var(--font-raleway)" }}
+              className={cn(
+                "px-3 py-2 text-left text-[12px] uppercase tracking-[0.2em] transition-colors",
+                active
+                  ? "font-black text-brand-dark"
+                  : "font-bold text-ink hover:text-brand-dark",
+              )}
+            >
+              {groups[k].label}
+            </button>
+          );
+        })}
         <Link
-          href={`/s/${sectionId}`}
-          className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink underline-offset-[6px] hover:text-brand hover:underline"
+          href={viewAllHref}
+          className="mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-ink underline-offset-[6px] hover:text-brand hover:underline"
           style={{ fontFamily: "var(--font-raleway)" }}
         >
           View all &rarr;
         </Link>
-      </div>
+      </aside>
 
-      <div className="grid grid-cols-5 gap-5">
+      {/* Right grid — fixed height across tabs so the dropdown doesn't jump when
+          switching; scrollbar stays visible so users notice there's more below. */}
+      <div className="mega-scroll h-[280px] overflow-y-scroll pr-3">
+        <div className="grid grid-cols-5 gap-5 pb-2">
+          {tiles.map((tile) => (
+            <Link key={tile.href + tile.label} href={tile.href} className="group flex flex-col gap-3">
+              <div className="relative aspect-[4/5] overflow-hidden bg-bg">
+                <Image
+                  src={tile.image}
+                  alt={tile.label}
+                  fill
+                  sizes="(min-width: 1024px) 15vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                />
+              </div>
+              <p
+                className="text-center text-[12px] font-bold uppercase tracking-[0.18em] text-ink group-hover:text-brand"
+                style={{ fontFamily: "var(--font-raleway)" }}
+              >
+                {tile.label}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Mega-menu ─────────── */
+
+function MegaMenu({ sectionId }: { sectionId: SectionId }) {
+  // Only show top-level categories in the mega-menu — sub-categories live inside
+  // each category page via the sub-category pill row, so surfacing them here as
+  // image-less "B / R / M" tiles just clutters the dropdown.
+  const items = categories.filter(
+    (c) => c.sectionId === sectionId && !c.parentId,
+  );
+  return (
+    <div className="animate-fade-in">
+      <div className="mega-scroll h-[280px] overflow-y-scroll pr-3">
+      <div className="grid grid-cols-6 gap-4 pb-2">
         {items.map((cat) => (
           <Link
             key={cat.id}
-            href={`/s/${cat.sectionId}/${cat.slug}`}
-            className="group flex flex-col gap-3"
+            href={`/c/${cat.slug}`}
+            className="group flex flex-col gap-2"
           >
-            <div className="relative aspect-[4/5] overflow-hidden bg-bg">
+            <div className="relative aspect-square overflow-hidden bg-bg">
               {cat.image ? (
                 <Image
                   src={cat.image}
@@ -262,6 +477,7 @@ function MegaMenu({ sectionId }: { sectionId: SectionId }) {
             </p>
           </Link>
         ))}
+      </div>
       </div>
     </div>
   );

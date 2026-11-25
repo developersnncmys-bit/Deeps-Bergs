@@ -200,42 +200,130 @@ function TextModePanel({ onPick }: { onPick: (q: string) => void }) {
   );
 }
 
-/* ─────────────── Voice mode — pulsing mic + fake transcript ─────────────── */
+/* ─────────────── Voice mode — browser Web Speech API with graceful fallback ─────────────── */
 
-const SAMPLE_TRANSCRIPTS = [
-  "red lehenga for a sangeet under twenty thousand",
-  "ivory saree with chikankari work under ten thousand",
-  "men's sherwani for a reception",
-  "cotton co-ord set for daywear",
-  "charcoal nehru jacket under ten thousand",
-];
+// Browser SpeechRecognition shape — not in TS lib by default.
+// Nesting: event.results[i]          → SpeechRecognitionResult (has isFinal + list of alternatives)
+//           event.results[i][j]       → SpeechRecognitionAlternative (has transcript, confidence)
+type RecognitionAlternative = { transcript: string; confidence?: number };
+type RecognitionResult = {
+  [k: number]: RecognitionAlternative;
+  length: number;
+  isFinal?: boolean;
+};
+type SpeechRecognitionEventLike = {
+  results: { [k: number]: RecognitionResult; length: number };
+  resultIndex: number;
+};
+type SpeechRecognitionErrorLike = { error: string };
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((e: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((e: SpeechRecognitionErrorLike) => void) | null;
+  onend: (() => void) | null;
+};
+
+type VoicePhase = "listening" | "done" | "denied" | "unsupported" | "error";
+
+function getRecognitionCtor():
+  | (new () => SpeechRecognitionLike)
+  | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
 
 function VoiceModePanel({ onDone }: { onDone: (transcript: string) => void }) {
-  const [phase, setPhase] = useState<"listening" | "done">("listening");
+  const [phase, setPhase] = useState<VoicePhase>("listening");
   const [transcript, setTranscript] = useState("");
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const finalRef = useRef<string>("");
+  const doneRef = useRef(false);
+
+  const start = () => {
+    const Ctor = getRecognitionCtor();
+    if (!Ctor) {
+      setPhase("unsupported");
+      return;
+    }
+
+    const recognition = new Ctor();
+    recognition.lang = "en-IN"; // en-IN handles Hinglish surprisingly well
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognitionRef.current = recognition;
+    finalRef.current = "";
+    doneRef.current = false;
+    setPhase("listening");
+    setTranscript("");
+
+    recognition.onresult = (event: SpeechRecognitionEventLike) => {
+      let interim = "";
+      let finalText = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const r = event.results[i];
+        const piece = r[0].transcript;
+        if (r.isFinal) finalText += piece;
+        else interim += piece;
+      }
+      finalRef.current += finalText;
+      setTranscript((finalRef.current + interim).trim());
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorLike) => {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setPhase("denied");
+      } else if (event.error === "no-speech") {
+        // Soft fail — stay in listening so user can try again
+      } else {
+        setPhase("error");
+      }
+    };
+
+    recognition.onend = () => {
+      const final = finalRef.current.trim();
+      if (final && !doneRef.current) {
+        doneRef.current = true;
+        setPhase("done");
+        setTranscript(final);
+        window.setTimeout(() => onDone(final), 600);
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      setPhase("error");
+    }
+  };
 
   useEffect(() => {
-    const picked =
-      SAMPLE_TRANSCRIPTS[Math.floor(Math.random() * SAMPLE_TRANSCRIPTS.length)];
-    const start = Date.now();
-    const typeInterval = window.setInterval(() => {
-      const t = Date.now() - start;
-      const chars = Math.min(picked.length, Math.floor((t / 1800) * picked.length));
-      setTranscript(picked.slice(0, chars));
-      if (chars >= picked.length) window.clearInterval(typeInterval);
-    }, 80);
-
-    const done = window.setTimeout(() => {
-      setPhase("done");
-      setTranscript(picked);
-      window.setTimeout(() => onDone(picked), 800);
-    }, 2200);
-
+    start();
     return () => {
-      window.clearInterval(typeInterval);
-      window.clearTimeout(done);
+      recognitionRef.current?.abort();
     };
-  }, [onDone]);
+    // Only on mount — callers get a fresh VoiceModePanel per open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const label =
+    phase === "denied"
+      ? "Microphone blocked. Enable it in your browser settings."
+      : phase === "unsupported"
+        ? "Voice search isn't supported in this browser. Try Chrome, Edge or Safari."
+        : phase === "error"
+          ? "Couldn't hear you. Try again."
+          : transcript
+            ? `“${transcript}”`
+            : "Listening…";
 
   return (
     <div className="bg-white">
@@ -248,32 +336,52 @@ function VoiceModePanel({ onDone }: { onDone: (transcript: string) => void }) {
           What are you looking for?
         </h2>
 
-        <div className="relative mt-10 flex h-40 w-40 items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            // Tap to stop & submit if we already have something; otherwise restart.
+            if (transcript && phase === "listening") {
+              recognitionRef.current?.stop();
+            } else if (phase !== "listening") {
+              start();
+            }
+          }}
+          aria-label={phase === "listening" ? "Stop and search" : "Start listening"}
+          className="relative mt-10 flex h-40 w-40 items-center justify-center"
+        >
           <span
             aria-hidden
             className={
-              "absolute inset-0 rounded-full bg-brand/15 " +
+              "absolute inset-0 rounded-full bg-ink/15 " +
               (phase === "listening" ? "animate-ping" : "")
             }
           />
           <span
             aria-hidden
             className={
-              "absolute inset-3 rounded-full bg-brand/25 " +
+              "absolute inset-3 rounded-full bg-ink/25 " +
               (phase === "listening" ? "animate-ping [animation-delay:150ms]" : "")
             }
           />
-          <span className="relative z-10 flex h-28 w-28 items-center justify-center rounded-full bg-brand text-white shadow-lg">
+          <span className="relative z-10 flex h-28 w-28 items-center justify-center rounded-full bg-ink text-white shadow-lg">
             <TbMicrophone size={42} />
           </span>
-        </div>
+        </button>
 
-        <p className="mt-10 min-h-[1.5em] max-w-xl text-lg text-ink">
-          {transcript ? `“${transcript}”` : "Listening…"}
-        </p>
+        <p className="mt-10 min-h-[1.5em] max-w-xl text-lg text-ink">{label}</p>
         <p className="mt-2 text-[11px] uppercase tracking-[0.25em] text-ink-subtle">
           Speak in English, Hindi, or mixed
         </p>
+
+        {(phase === "denied" || phase === "unsupported" || phase === "error") && (
+          <button
+            type="button"
+            onClick={start}
+            className="mt-6 inline-flex items-center border border-ink px-5 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-white"
+          >
+            Try again
+          </button>
+        )}
       </div>
     </div>
   );

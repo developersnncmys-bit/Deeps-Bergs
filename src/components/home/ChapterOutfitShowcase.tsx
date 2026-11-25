@@ -139,7 +139,7 @@ export function ChapterOutfitShowcase() {
           </p>
           <h2
             style={{ fontFamily: "var(--font-raleway)" }}
-            className="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold uppercase tracking-[0.04em] leading-[1.1] text-ink"
+            className="text-[clamp(1.5rem,3vw,2.5rem)] font-black uppercase tracking-[0.04em] leading-[1.1] text-ink"
           >
             Every piece, previewed on-body.
           </h2>

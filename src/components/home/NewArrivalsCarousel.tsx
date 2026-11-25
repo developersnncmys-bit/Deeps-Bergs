@@ -35,10 +35,22 @@ export function NewArrivalsCarousel() {
       className="scroll-mt-20 bg-bg py-14 sm:py-16 lg:py-20"
     >
       {/* Centered heading */}
-      <div className="mb-8 text-center">
+      <div className="mx-auto mb-8 flex max-w-xl flex-col items-center gap-3 px-4 text-center sm:mb-10">
         <h2 className="font-sans text-xl uppercase tracking-[0.15em] text-ink sm:text-2xl lg:text-3xl">
           New Arrivals
         </h2>
+        <p className="text-sm text-ink-muted sm:text-base">
+          Fresh off the atelier floor — hand-finished pieces added this week,
+          spanning wedding, contemporary and activewear.
+        </p>
+        <Link
+          href="/new"
+          style={{ fontFamily: "var(--font-raleway)" }}
+          className="mt-1 inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-ink underline-offset-[6px] hover:text-brand hover:underline"
+        >
+          View all
+          <span aria-hidden>→</span>
+        </Link>
       </div>
 
       {/* Scrolling row */}

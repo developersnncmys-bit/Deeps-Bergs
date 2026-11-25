@@ -1,19 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product, Category } from "@/lib/types";
 import { formatINR } from "@/lib/utils";
+import {
+  BrowseDatesSection,
+  ReserveInAdvanceModal,
+} from "@/components/rent/RentCatalog";
 
-export type SortKey = "featured" | "price-low" | "price-high" | "newest";
+// Per SOW C01: sort by relevance, price, newest, popularity.
+export type SortKey =
+  | "relevance"
+  | "popularity"
+  | "newest"
+  | "price-low"
+  | "price-high";
 
 export const sortLabels: Record<SortKey, string> = {
-  featured: "Featured",
+  relevance: "Relevance",
+  popularity: "Popularity",
   newest: "Newest",
   "price-low": "Price: Low to High",
   "price-high": "Price: High to Low",
 };
+
+// Per SOW C01: Buy or rent filter.
+export type ModeFilter = "all" | "buy" | "rent";
 
 const MENS_CATS = new Set(["sherwani", "groomswear"]);
 const WOMENS_CATS = new Set([
@@ -37,12 +51,16 @@ export function ShopCategory({
   category,
   items,
   siblings,
+  subCategories = [],
+  parent = null,
 }: {
   category: Category;
   items: Product[];
   siblings: Category[];
+  subCategories?: Category[];
+  parent?: Category | null;
 }) {
-  const [sort, setSort] = useState<SortKey>("featured");
+  const [sort, setSort] = useState<SortKey>("relevance");
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
@@ -50,6 +68,27 @@ export function ShopCategory({
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
+  const [mode, setMode] = useState<ModeFilter>("all");
+
+  // Rental date window (SOW C01 — "rental date availability" filter). Lives here
+  // so the drawer chip and the Reserve-In-Advance modal share the same state.
+  const [datesCleared, setDatesCleared] = useState(true);
+  const [dateModalOpen, setDateModalOpen] = useState(false);
+  const [rentalDuration, setRentalDuration] = useState<3 | 5 | 7>(3);
+  // Initialise with epoch and hydrate on mount — Next.js disallows `new Date()`
+  // in a Client Component's initial state because it would freeze into the
+  // prerender output. Picking the real "today" happens client-side instead.
+  const [rentalStart, setRentalStart] = useState<Date>(() => new Date(0));
+  useEffect(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    setRentalStart(d);
+  }, []);
+  const rentalEnd = useMemo(() => {
+    const d = new Date(rentalStart);
+    d.setDate(d.getDate() + rentalDuration);
+    return d;
+  }, [rentalStart, rentalDuration]);
 
   // Compute price bounds from this category's items
   const priceBounds = useMemo(() => {
@@ -91,15 +130,24 @@ export function ShopCategory({
     items.forEach((p) => p.brand && s.add(p.brand));
     return Array.from(s).sort();
   }, [items]);
+  // Hide the Gender filter entirely when the current category is already
+  // gender-specific (e.g. Lehengas, Sherwanis, or any of their sub-categories) —
+  // the filter would be a no-op there. Returning [] makes the drawer skip the section.
   const allGenders = useMemo(() => {
-    // Always show Men + Women even if this category only has one; add Unisex if present.
-    const s = new Set<string>(["Men", "Women"]);
-    items.forEach((p) => s.add(getProductGender(p)));
-    return Array.from(s).sort();
-  }, [items]);
+    const idToCheck = category.parentId ?? category.id;
+    if (MENS_CATS.has(idToCheck) || WOMENS_CATS.has(idToCheck)) return [];
+    return ["Men", "Women"];
+  }, [category.id, category.parentId]);
 
   const sorted = useMemo(() => {
     let base = items;
+
+    // Buy or Rent mode filter (SOW C01)
+    if (mode === "buy") {
+      base = base.filter((p) => p.mode === "buy" || p.mode === "both");
+    } else if (mode === "rent") {
+      base = base.filter((p) => p.mode === "rent" || p.mode === "both");
+    }
 
     if (selectedSizes.length > 0) {
       base = base.filter((p) =>
@@ -135,18 +183,25 @@ export function ShopCategory({
     }
 
     const out = [...base];
-    const price = (p: Product) => p.price ?? Infinity;
+    const price = (p: Product) => p.price ?? p.rentalPricing?.[0]?.price ?? Infinity;
     if (sort === "price-low") out.sort((a, b) => price(a) - price(b));
     else if (sort === "price-high") out.sort((a, b) => price(b) - price(a));
-    else if (sort === "newest")
+    else if (sort === "newest") {
       out.sort(
         (a, b) =>
           (b.tags?.includes("New") ? 1 : 0) - (a.tags?.includes("New") ? 1 : 0),
       );
+    } else if (sort === "popularity") {
+      // Popularity = rating × reviewCount as a simple proxy until real analytics land.
+      const score = (p: Product) => (p.rating ?? 0) * (p.reviewCount ?? 0);
+      out.sort((a, b) => score(b) - score(a));
+    }
+    // "relevance" is the catalogue's natural order (no re-sort).
     return out;
   }, [
     items,
     sort,
+    mode,
     selectedSizes,
     selectedOccasions,
     selectedFabrics,
@@ -164,6 +219,7 @@ export function ShopCategory({
     selectedColors.length +
     selectedBrands.length +
     selectedGenders.length +
+    (mode !== "all" ? 1 : 0) +
     (priceMax < priceBounds.max ? 1 : 0);
 
   const clearAll = () => {
@@ -173,13 +229,15 @@ export function ShopCategory({
     setSelectedColors([]);
     setSelectedBrands([]);
     setSelectedGenders([]);
+    setMode("all");
     setPriceMax(priceBounds.max);
-    setSort("featured");
+    setSort("relevance");
   };
 
   return (
     <div className="bg-white pb-20">
-      {/* Breadcrumb */}
+      {/* Breadcrumb — adds Women/Men context so users have a path back to the
+          gender landing instead of hunting through the top nav. */}
       <nav className="mx-auto max-w-[1500px] px-4 pt-8 text-[11px] uppercase tracking-[0.2em] text-ink-muted sm:px-6 lg:px-10">
         <Link href="/" className="hover:text-ink">
           Home
@@ -188,6 +246,40 @@ export function ShopCategory({
         <Link href="/shop" className="hover:text-ink">
           Shop
         </Link>
+        {(() => {
+          const ids = [category.id, parent?.id].filter(Boolean) as string[];
+          const isMen = ids.some((id) => MENS_CATS.has(id));
+          const isWomen = ids.some((id) => WOMENS_CATS.has(id));
+          if (isMen && !isWomen) {
+            return (
+              <>
+                <span className="mx-2 text-ink-subtle">/</span>
+                <Link href="/men" className="hover:text-ink">
+                  Men
+                </Link>
+              </>
+            );
+          }
+          if (isWomen && !isMen) {
+            return (
+              <>
+                <span className="mx-2 text-ink-subtle">/</span>
+                <Link href="/women" className="hover:text-ink">
+                  Women
+                </Link>
+              </>
+            );
+          }
+          return null;
+        })()}
+        {parent && (
+          <>
+            <span className="mx-2 text-ink-subtle">/</span>
+            <Link href={`/c/${parent.slug}`} className="hover:text-ink">
+              {parent.name}
+            </Link>
+          </>
+        )}
         <span className="mx-2 text-ink-subtle">/</span>
         <span className="text-ink">{category.name}</span>
       </nav>
@@ -203,17 +295,28 @@ export function ShopCategory({
         <p className="mt-2 text-xs text-ink-muted">{sorted.length} items</p>
       </div>
 
-      {/* Sibling category pills */}
-      {siblings.length > 1 && (
+      {/* Top-level sibling pills intentionally removed — they mixed genders
+          (Lehengas next to Sherwanis) and duplicated the top nav. The breadcrumb
+          above now carries gender context, and sub-category pills below handle
+          in-category narrowing. */}
+
+      {/* Sub-category pills — secondary row (SOW C01 — sub-categories) */}
+      {subCategories.length > 0 && (
         <div className="px-4 sm:px-6 lg:px-10">
-          <div className="mx-auto flex max-w-[1500px] flex-wrap justify-center gap-2 py-4">
-            {siblings.map((s) => {
+          <div className="mx-auto flex max-w-[1500px] flex-wrap justify-center gap-2 pb-4">
+            <Link
+              href={`/c/${(parent ?? category).slug}`}
+              className={`shrink-0 rounded-full border px-4 py-1 text-xs font-medium transition-colors ${!parent && category.id === (parent ?? category).id ? "border-brand-dark bg-brand-tint text-brand-dark" : "border-line-strong text-ink-muted hover:border-ink hover:text-ink"}`}
+            >
+              All {(parent ?? category).name}
+            </Link>
+            {subCategories.map((s) => {
               const active = s.id === category.id;
               return (
                 <Link
                   key={s.id}
                   href={`/c/${s.slug}`}
-                  className={`shrink-0 rounded-full border px-5 py-1.5 text-sm font-medium transition-colors ${active ? "border-ink bg-ink text-white" : "border-ink text-ink hover:bg-ink hover:text-white"}`}
+                  className={`shrink-0 rounded-full border px-4 py-1 text-xs font-medium transition-colors ${active ? "border-brand-dark bg-brand-tint text-brand-dark" : "border-line-strong text-ink-muted hover:border-ink hover:text-ink"}`}
                 >
                   {s.name}
                 </Link>
@@ -273,12 +376,39 @@ export function ShopCategory({
           allGenders={allGenders}
           selectedGenders={selectedGenders}
           setSelectedGenders={setSelectedGenders}
+          mode={mode}
+          setMode={setMode}
+          datesCleared={datesCleared}
+          rentalStart={rentalStart}
+          rentalEnd={rentalEnd}
+          onOpenDateModal={() => {
+            setDatesCleared(false);
+            setDateModalOpen(true);
+          }}
+          onClearDates={() => setDatesCleared(true)}
           priceBounds={priceBounds}
           priceMax={priceMax}
           setPriceMax={setPriceMax}
           resultCount={sorted.length}
           onClose={() => setFilterOpen(false)}
           onClearAll={clearAll}
+        />
+      )}
+
+      {dateModalOpen && (
+        <ReserveInAdvanceModal
+          duration={rentalDuration}
+          setDuration={setRentalDuration}
+          startDate={rentalStart}
+          setStartDate={setRentalStart}
+          endDate={rentalEnd}
+          onClose={() => setDateModalOpen(false)}
+          onReset={() => {
+            const t = new Date();
+            t.setHours(0, 0, 0, 0);
+            setRentalStart(t);
+            setRentalDuration(3);
+          }}
         />
       )}
 
@@ -418,6 +548,13 @@ export function ShopFilterDrawer({
   allGenders,
   selectedGenders,
   setSelectedGenders,
+  mode,
+  setMode,
+  datesCleared,
+  rentalStart,
+  rentalEnd,
+  onOpenDateModal,
+  onClearDates,
   priceBounds,
   priceMax,
   setPriceMax,
@@ -445,6 +582,13 @@ export function ShopFilterDrawer({
   allGenders: string[];
   selectedGenders: string[];
   setSelectedGenders: (s: string[]) => void;
+  mode?: ModeFilter;
+  setMode?: (m: ModeFilter) => void;
+  datesCleared?: boolean;
+  rentalStart?: Date;
+  rentalEnd?: Date;
+  onOpenDateModal?: () => void;
+  onClearDates?: () => void;
   priceBounds: { min: number; max: number };
   priceMax: number;
   setPriceMax: (n: number) => void;
@@ -507,6 +651,38 @@ export function ShopFilterDrawer({
               })}
             </div>
           </section>
+
+          {/* Buy or Rent (SOW C01) */}
+          {mode !== undefined && setMode && (
+            <section className="mb-8 border-t border-line pt-6">
+              <h3 className="mb-3 text-base font-semibold text-ink">
+                Buy or Rent
+              </h3>
+              <div className="inline-flex rounded-full border border-ink p-1">
+                {(["all", "buy", "rent"] as ModeFilter[]).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMode(m)}
+                    className={`rounded-full px-5 py-1.5 text-sm font-semibold capitalize transition-colors ${mode === m ? "bg-ink text-white" : "text-ink hover:bg-bg"}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Browse specific rental dates — only when user is browsing Rent (SOW C01) */}
+          {rentalStart && rentalEnd && onOpenDateModal && onClearDates && mode === "rent" && (
+            <BrowseDatesSection
+              cleared={datesCleared ?? true}
+              start={rentalStart}
+              end={rentalEnd}
+              onOpen={onOpenDateModal}
+              onClear={onClearDates}
+            />
+          )}
 
           {/* Price range */}
           {priceBounds.max > priceBounds.min && (

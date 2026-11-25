@@ -70,6 +70,19 @@ export interface Product {
   reviewCount?: number;
 }
 
+// Curated cross-category edits (SOW C01 — "collections").
+// A collection is a hand-picked list of products that may span sections and
+// categories (e.g. "Festive Edit 2026", "Modern Bride"). Distinct from a Look,
+// which represents a single styled outfit.
+export interface Collection {
+  id: string;
+  slug: string;
+  name: string;
+  tagline?: string;
+  heroImage?: string;
+  productIds: string[];
+}
+
 export interface Look {
   id: string;
   slug: string;

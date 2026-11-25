@@ -3,8 +3,17 @@ import type { Category } from "@/lib/types";
 export const categories: Category[] = [
   // Wedding
   { id: "lehenga", sectionId: "wedding", name: "Lehengas", slug: "lehengas", image: "/images/category/Lehengas.png" },
+  // Lehenga sub-categories
+  { id: "lehenga-bridal", sectionId: "wedding", name: "Bridal", slug: "lehenga-bridal", parentId: "lehenga" },
+  { id: "lehenga-reception", sectionId: "wedding", name: "Reception", slug: "lehenga-reception", parentId: "lehenga" },
+  { id: "lehenga-mehendi", sectionId: "wedding", name: "Mehendi", slug: "lehenga-mehendi", parentId: "lehenga" },
+
   { id: "bridal-saree", sectionId: "wedding", name: "Bridal Sarees", slug: "bridal-sarees", image: "/images/category/bridal.png" },
   { id: "sherwani", sectionId: "wedding", name: "Sherwanis", slug: "sherwanis", image: "/images/category/sherwanis.png" },
+  // Sherwani sub-categories
+  { id: "sherwani-silk", sectionId: "wedding", name: "Silk", slug: "sherwani-silk", parentId: "sherwani" },
+  { id: "sherwani-velvet", sectionId: "wedding", name: "Velvet", slug: "sherwani-velvet", parentId: "sherwani" },
+
   { id: "groomswear", sectionId: "wedding", name: "Groomswear", slug: "groomswear", image: "/images/category/groomswear.png" },
   { id: "accessories-wedding", sectionId: "wedding", name: "Accessories", slug: "accessories" },
 

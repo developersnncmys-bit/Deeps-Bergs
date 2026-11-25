@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { Product, Category } from "@/lib/types";
 import { formatINR } from "@/lib/utils";
+import { LoopingTypewriter } from "@/components/ui/LoopingTypewriter";
 
 type SortKey = "newest" | "price-low" | "price-high";
 
@@ -46,11 +47,14 @@ export function RentCatalog({
   const [datesCleared, setDatesCleared] = useState(false);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [rentalDuration, setRentalDuration] = useState<3 | 5 | 7>(3);
-  const [rentalStart, setRentalStart] = useState<Date>(() => {
+  // Init to epoch, hydrate on mount — Cache Components disallows `new Date()`
+  // in a Client Component's initial state.
+  const [rentalStart, setRentalStart] = useState<Date>(() => new Date(0));
+  useEffect(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    return d;
-  });
+    setRentalStart(d);
+  }, []);
   const rentalEnd = useMemo(() => {
     const d = new Date(rentalStart);
     d.setDate(d.getDate() + rentalDuration);
@@ -392,7 +396,7 @@ function CatPill({
   );
 }
 
-function formatDateRange(start: Date, end: Date) {
+export function formatDateRange(start: Date, end: Date) {
   const sMonth = start.toLocaleDateString("en-US", { month: "short" });
   const eMonth = end.toLocaleDateString("en-US", { month: "short" });
   if (sMonth === eMonth) return `${sMonth} ${start.getDate()}-${end.getDate()}`;
@@ -466,8 +470,8 @@ function RentPromoBanner() {
       </div>
       {/* Right — black text panel */}
       <div className="flex flex-col items-center justify-center gap-6 bg-ink px-8 py-20 text-center text-white lg:px-14 lg:py-32">
-        <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl">
-          Wear it. Return it.
+        <h3 className="min-h-[1.2em] font-serif text-3xl sm:text-4xl lg:text-5xl">
+          <LoopingTypewriter text="Wear it. Return it." />
         </h3>
         <p className="max-w-sm text-sm text-white/80">
           Dry-cleaned, delivered, and picked up. Your deposit is refunded in 3 working days — we handle every step of the rental.
@@ -985,7 +989,7 @@ function FilterDrawer({
   );
 }
 
-function BrowseDatesSection({
+export function BrowseDatesSection({
   cleared,
   start,
   end,
@@ -1042,7 +1046,7 @@ function BrowseDatesSection({
   );
 }
 
-function ReserveInAdvanceModal({
+export function ReserveInAdvanceModal({
   duration,
   setDuration,
   startDate,
