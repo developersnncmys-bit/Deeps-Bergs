@@ -331,10 +331,10 @@ const tabbedMegaMenuConfigs: Partial<Record<SectionId, TabbedConfig>> = {
       category: {
         label: "Category",
         tiles: [
-          { label: "Tops", image: "/images/3d/products/p-v1.png", href: "/c/tops" },
-          { label: "Bottoms", image: "/images/3d/products/p-v2.png", href: "/c/bottoms" },
-          { label: "Lounge", image: "/images/3d/products/p-v3.png", href: "/c/lounge" },
-          { label: "Outerwear", image: "/images/3d/products/p-v4.png", href: "/c/outerwear" },
+          { label: "Tops", image: "/images/activewear/tops.png", href: "/c/tops" },
+          { label: "Bottoms", image: "/images/activewear/bottom3.png", href: "/c/bottoms" },
+          { label: "Lounge", image: "/images/activewear/lounge1.png", href: "/c/lounge" },
+          { label: "Outerwear", image: "/images/activewear/outerwear1.png", href: "/c/outerwear" },
         ],
       },
       activity: {
